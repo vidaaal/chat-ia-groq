@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#11130f">
+  <meta name="description" content="Orbit é o workspace de IA para pensar, criar e executar melhor.">
+  <title>Orbit — pense em grande escala</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    :root {
+      --ink: #e9ecd9;
+      --muted: #9ba192;
+      --line: rgba(232, 239, 209, .14);
+      --panel: rgba(28, 33, 24, .78);
+      --lime: #c5d86d;
+      --lime-dark: #91a641;
+      --night: #11130f;
+      --night-deep: #090b08;
+      --orange: #e7a574;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--night);
+      font-family: "Inter", "DM Sans", sans-serif;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    .page-noise {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .16;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+    .orb {
+      position: absolute; width: 42vw; height: 42vw; border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(197, 216, 109, .18), transparent 66%);
+      filter: blur(2px); transform: translate(-50%, -50%);
+    }
+    .orb.one { top: 11%; left: 80%; }
+    .orb.two { top: 74%; left: 8%; opacity: .55; }
+    .shell { width: min(1180px, calc(100% - 48px)); margin: auto; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      padding: 24px 0; border-bottom: 1px solid var(--line);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; letter-spacing: -.04em; }
+    .logo-mark {
+      display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px;
+      color: #17200d; background: var(--lime); box-shadow: 0 0 28px rgba(197, 216, 109, .22);
+    }
+    .nav-links { display: flex; align-items: center; gap: 25px; color: var(--muted); font-size: 12px; }
+    .nav-links a { transition: color .2s ease; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta, .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px; border: 0; border-radius: 999px;
+      color: #18200d; background: var(--lime); font-size: 12px; font-weight: 700;
+      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+    .nav-cta { padding: 10px 15px; }
+    .nav-cta:hover, .hero-cta:hover { background: #d7e784; box-shadow: 0 12px 30px rgba(197, 216, 109, .2); transform: translateY(-2px); }
+    .hero { position: relative; min-height: 790px; padding: 112px 0 100px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(380px, .75fr); align-items: center; gap: 72px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--lime); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px rgba(197, 216, 109, .1); }
+    h1, h2 { margin: 0; font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -.055em; }
+    h1 { max-width: 720px; margin-top: 20px; font-size: clamp(65px, 9.5vw, 130px); line-height: .83; }
+    h1 em { color: var(--lime); font-style: italic; }
+    .hero-copy { max-width: 445px; margin: 26px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 34px; }
+    .hero-cta { padding: 15px 20px; }
+    .hero-link { color: var(--muted); font-size: 12px; transition: color .2s ease; }
+    .hero-link:hover { color: var(--ink); }
+    .trust-row { display: flex; align-items: center; gap: 11px; margin-top: 66px; color: var(--muted); font-size: 11px; }
+    .trust-avatars { display: flex; }
+    .trust-avatars span { display: grid; place-items: center; width: 26px; height: 26px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; color: #1d2811; background: var(--lime); font-size: 9px; font-weight: 700; }
+    .trust-avatars span:first-child { margin-left: 0; background: #f0bf94; }
+    .trust-avatars span:last-child { background: #b1cce0; }
+    .orbit-card {
+      position: relative; min-height: 465px; padding: 18px; border: 1px solid var(--line);
+      border-radius: 24px; background: linear-gradient(145deg, rgba(40, 47, 31, .9), rgba(17, 21, 14, .84));
+      box-shadow: 0 28px 80px rgba(0, 0, 0, .24); overflow: hidden;
+    }
+    .orbit-card::before { content: ""; position: absolute; width: 270px; height: 270px; top: -90px; right: -80px; border-radius: 50%; background: rgba(197, 216, 109, .15); filter: blur(30px); }
+    .card-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 10px; }
+    .card-dots { display: flex; gap: 5px; }
+    .card-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); opacity: .7; }
+    .card-dots i:nth-child(2) { opacity: .4; } .card-dots i:nth-child(3) { opacity: .2; }
+    .card-content { position: relative; z-index: 1; padding: 50px 28px 28px; }
+    .card-content small { color: var(--lime); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .card-content h2 { max-width: 360px; margin-top: 14px; font-size: clamp(37px, 4vw, 57px); line-height: .93; }
+    .card-content p { max-width: 290px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .mini-chat { margin-top: 34px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(8, 11, 7, .45); }
+    .mini-message { display: flex; gap: 9px; margin-bottom: 12px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .mini-message:last-child { margin: 0; color: var(--ink); }
+    .mini-avatar { display: grid; place-items: center; flex: 0 0 23px; width: 23px; height: 23px; border-radius: 7px; color: #15200b; background: var(--lime); font-size: 9px; font-weight: 700; }
+    .mini-message:last-child .mini-avatar { color: #1f1911; background: var(--orange); }
+    .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
+    .marquee-track { display: flex; width: max-content; gap: 35px; padding: 17px 0; color: #596052; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .marquee-track span::after { content: "✦"; margin-left: 35px; color: var(--lime-dark); }
+    .section { padding: 145px 0; }
+    .section-intro { display: flex; align-items: end; justify-content: space-between; gap: 35px; margin-bottom: 54px; }
+    .section-intro h2 { max-width: 620px; margin-top: 15px; font-size: clamp(47px, 6vw, 78px); line-height: .9; }
+    .section-intro p { max-width: 280px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .feature-card { min-height: 300px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); transition: transform .35s ease, border-color .35s ease; }
+    .feature-card:hover { border-color: rgba(197, 216, 109, .45); transform: translateY(-8px); }
+    .feature-number { color: var(--lime); font-family: "Instrument Serif"; font-size: 26px; }
+    .feature-card h3 { margin: 72px 0 10px; font-size: 16px; }
+    .feature-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .feature-line { width: 45px; height: 1px; margin-top: 23px; background: var(--lime); }
+    .dark-band { background: #171b13; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .split h2 { margin-top: 16px; font-size: clamp(48px, 6vw, 82px); line-height: .87; }
+    .split-copy { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .capability-list { margin-top: 30px; border-top: 1px solid var(--line); }
+    .capability { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 12px; }
+    .capability span { color: var(--lime); }
+    .stack { position: relative; min-height: 420px; }
+    .stack-card { position: absolute; width: 74%; padding: 22px; border: 1px solid var(--line); border-radius: 17px; background: #22291b; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+    .stack-card:nth-child(1) { top: 0; right: 0; transform: rotate(4deg); }
+    .stack-card:nth-child(2) { top: 102px; left: 0; transform: rotate(-4deg); background: #252b20; }
+    .stack-card:nth-child(3) { top: 205px; right: 8%; transform: rotate(2deg); background: #313a25; }
+    .stack-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+    .stack-card h3 { margin: 32px 0 7px; font-size: 15px; }
+    .stack-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .cta { padding: 150px 0 170px; text-align: center; }
+    .cta h2 { max-width: 760px; margin: 17px auto 0; font-size: clamp(56px, 8vw, 105px); line-height: .84; }
+    .cta p { max-width: 390px; margin: 28px auto 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .cta .hero-cta { margin-top: 30px; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    footer strong { color: var(--ink); }
+    .reveal { opacity: 0; transform: translateY(28px); }
+    @media (max-width: 800px) {
+      .shell { width: min(100% - 30px, 620px); }
+      .nav-links { display: none; }
+      .hero { min-height: auto; padding: 75px 0 90px; }
+      .hero-grid, .split { grid-template-columns: 1fr; gap: 55px; }
+      h1 { font-size: clamp(62px, 18vw, 100px); }
+      .orbit-card { min-height: 410px; }
+      .trust-row { margin-top: 45px; }
+      .section { padding: 90px 0; }
+      .section-intro { display: block; }
+      .section-intro p { margin-top: 24px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card { min-height: 235px; }
+      .feature-card h3 { margin-top: 46px; }
+      .stack { min-height: 375px; }
+      .stack-card { width: 84%; }
+      footer { display: block; line-height: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-noise"></div>
+  <div class="orb one"></div><div class="orb two"></div>
+  <header class="shell nav">
+    <a class="logo" href="#top" aria-label="Orbit início"><span class="logo-mark">✦</span> Orbit AI</a>
+    <nav class="nav-links" aria-label="Navegação principal">
+      <a href="#produto">Produto</a><a href="#agentes">Agentes</a><a href="#manifesto">Manifesto</a>
+    </nav>
+    <a class="nav-cta" href="index.html">Abrir workspace <span>↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="shell hero">
+      <div class="hero-grid">
+        <div class="hero-copy-wrap">
+          <span class="eyebrow reveal"><i></i> Um novo jeito de trabalhar</span>
+          <h1 class="reveal">Pense menos no <em>ruído.</em> Faça mais do que importa.</h1>
+          <p class="hero-copy reveal">Orbit é o workspace de IA que transforma perguntas soltas em decisões claras, código melhor e trabalho que realmente anda.</p>
+          <div class="hero-actions reveal">
+            <a class="hero-cta" href="index.html">Começar agora <span>→</span></a>
+            <a class="hero-link" href="#produto">Conhecer o Orbit ↓</a>
+          </div>
+          <div class="trust-row reveal"><div class="trust-avatars"><span>AS</span><span>MK</span><span>JD</span></div><span>Feito para pessoas que não aceitam o básico.</span></div>
+        </div>
+        <div class="orbit-card reveal" data-tilt>
+          <div class="card-top"><span>ORBIT / WORKSPACE</span><div class="card-dots"><i></i><i></i><i></i></div></div>
+          <div class="card-content">
+            <small>Seu copiloto, elevado</small>
+            <h2>Uma ideia. Vários especialistas. Um próximo passo.</h2>
+            <p>Raciocínio, visão, código, escrita e estratégia trabalhando no mesmo lugar.</p>
+            <div class="mini-chat">
+              <div class="mini-message"><span class="mini-avatar">AS</span><span>Tenho uma ideia, mas não sei por onde começar.</span></div>
+              <div class="mini-message"><span class="mini-avatar">✦</span><span>Vamos transformar isso em um plano executável.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee"><div class="marquee-track" data-marquee><span>Raciocínio profundo</span><span>Visão multimodal</span><span>Agentes especializados</span><span>Automação real</span><span>Raciocínio profundo</span><span>Visão multimodal</span></div></div>
+
+    <section class="shell section" id="produto">
+      <div class="section-intro reveal"><div><span class="eyebrow"><i></i> Tudo no mesmo fluxo</span><h2>Não é só uma conversa. É o lugar onde o trabalho acontece.</h2></div><p>Menos abas, menos contexto perdido, mais clareza entre a intenção e a execução.</p></div>
+      <div class="feature-grid">
+        <article class="feature-card reveal"><span class="feature-number">01</span><h3>Converse com intenção</h3><p>O Router entende o que você precisa e escolhe o especialista certo para cada pedido.</p><div class="feature-line"></div></article>
+        <article class="feature-card reveal"><span class="feature-number">02</span><h3>Crie com contexto</h3><p>Imagens, arquivos, voz, prompts e histórico juntos para a IA não perder o fio.</p><div class="feature-line"></div></article>
+        <article class="feature-card reveal"><span class="feature-number">03</span><h3>Saia da ideia</h3><p>Programe tarefas, conecte o GitHub e transforme respostas em próximos passos de verdade.</p><div class="feature-line"></div></article>
+      </div>
+    </section>
+
+    <section class="dark-band" id="agentes">
+      <div class="shell section split">
+        <div class="reveal"><span class="eyebrow"><i></i> Uma equipe sob demanda</span><h2>O agente certo para cada tipo de desafio.</h2><p class="split-copy">Código, estratégia, escrita, dados ou criatividade. O Orbit reúne especialistas que pensam diferente — para você não precisar fazer tudo sozinho.</p><div class="capability-list"><div class="capability">Arquitetura e código <span>↗</span></div><div class="capability">Decisões e análise <span>↗</span></div><div class="capability">Conteúdo e comunicação <span>↗</span></div><div class="capability">Dados e produtividade <span>↗</span></div></div></div>
+        <div class="stack reveal"><article class="stack-card"><div class="stack-label"><span>CODE SURGEON</span><span>● online</span></div><h3>Correção cirúrgica</h3><p>Preserva o comportamento. Resolve a causa raiz.</p></article><article class="stack-card"><div class="stack-label"><span>DEEP ANALYST</span><span>● online</span></div><h3>Clareza em meio ao caos</h3><p>Resume, compara, revela o que estava escondido.</p></article><article class="stack-card"><div class="stack-label"><span>IDEA MACHINE</span><span>● online</span></div><h3>Mais possibilidades</h3><p>Ideias específicas, aplicáveis e sem clichês.</p></article></div>
+      </div>
+    </section>
+
+    <section class="shell cta" id="manifesto">
+      <span class="eyebrow reveal"><i></i> O próximo passo começa aqui</span>
+      <h2 class="reveal">Seu melhor trabalho ainda está por vir.</h2>
+      <p class="reveal">Abra o workspace, traga uma pergunta difícil e deixe o Orbit ajudar a transformar intenção em movimento.</p>
+      <a class="hero-cta reveal" href="index.html">Entrar no Orbit <span>→</span></a>
+    </section>
+  </main>
+
+  <footer class="shell"><span><strong>Orbit AI</strong> — seu workspace inteligente.</span><span>Feito para pensar, criar e executar.</span></footer>
+
+  <script>
+    const revealItems = document.querySelectorAll('.reveal');
+    if (window.gsap) {
+      gsap.to(revealItems, { opacity: 1, y: 0, duration: .9, stagger: .08, ease: 'power3.out', delay: .15 });
+      gsap.to('.orb.one', { x: 32, y: 20, duration: 7, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.to('.orb.two', { x: -28, y: -18, duration: 9, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.to('[data-marquee]', { xPercent: -18, duration: 18, repeat: -1, ease: 'none' });
+      gsap.to('.stack-card:nth-child(1)', { y: -8, duration: 2.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.to('.stack-card:nth-child(2)', { y: 7, duration: 2.8, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: .3 });
+      gsap.to('.stack-card:nth-child(3)', { y: -5, duration: 2.1, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: .6 });
+    } else {
+      revealItems.forEach((item) => { item.style.opacity = '1'; item.style.transform = 'none'; });
+    }
+    const tiltCard = document.querySelector('[data-tilt]');
+    tiltCard?.addEventListener('pointermove', (event) => {
+      const box = tiltCard.getBoundingClientRect();
+      const rotateX = ((event.clientY - box.top) / box.height - .5) * -4;
+      const rotateY = ((event.clientX - box.left) / box.width - .5) * 5;
+      tiltCard.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    tiltCard?.addEventListener('pointerleave', () => { tiltCard.style.transform = ''; });
+  </script>
+</body>
+</html>

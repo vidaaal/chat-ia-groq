@@ -1,6 +1,12 @@
-# Chat IA · Groq
+# Orbit AI
 
-Chat de inteligência artificial moderno feito em HTML + JavaScript puro, usando a API da [Groq](https://groq.com).
+Landing page e workspace de inteligência artificial feitos em HTML, CSS e JavaScript puro, usando a API da [Groq](https://groq.com).
+
+## Experiência
+
+- `index.html` redireciona para a landing page do Orbit
+- `main/landing.html` é a página pública com animações GSAP e apresentação do produto
+- `main/index.html` é o workspace completo com chat, agentes, visão, voz, tarefas, GitHub e configurações
 
 ## Modelos disponíveis
 
@@ -26,7 +32,7 @@ Chat de inteligência artificial moderno feito em HTML + JavaScript puro, usando
 2. Cole sua chave da Groq e clique em **Salvar**
 3. Escolha o modelo e converse
 
-A resposta aparece em **streaming** (tempo real).
+A resposta aparece em **streaming** (tempo real). A chave é usada somente no navegador e não deve ser exposta em um site público.
 
 ## Ativar GitHub Pages
 
