@@ -135,6 +135,51 @@
     .cta h2 { max-width: 760px; margin: 17px auto 0; font-size: clamp(56px, 8vw, 105px); line-height: .84; }
     .cta p { max-width: 390px; margin: 28px auto 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
     .cta .hero-cta { margin-top: 30px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+    .stat { min-height: 155px; padding: 23px; background: var(--night); }
+    .stat strong { display: block; color: var(--lime); font-family: "Instrument Serif"; font-size: 49px; font-weight: 400; letter-spacing: -.05em; }
+    .stat span { display: block; max-width: 120px; margin-top: 9px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .workflow { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; }
+    .workflow h2 { max-width: 480px; margin-top: 15px; font-size: clamp(47px, 6vw, 76px); line-height: .88; }
+    .workflow-intro p { max-width: 340px; margin-top: 24px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .workflow-tabs { display: grid; gap: 8px; }
+    .workflow-tab { display: grid; grid-template-columns: 35px 1fr auto; align-items: center; gap: 14px; width: 100%; padding: 17px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); background: transparent; text-align: left; transition: .25s ease; }
+    .workflow-tab:hover, .workflow-tab.active { border-color: rgba(197, 216, 109, .55); color: var(--ink); background: rgba(197, 216, 109, .08); }
+    .workflow-tab b { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: #18200d; background: var(--lime); font-size: 11px; }
+    .workflow-tab strong { display: block; font-size: 13px; }
+    .workflow-tab small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .workflow-tab em { color: var(--lime); font-style: normal; }
+    .workflow-preview { min-height: 178px; margin-top: 15px; padding: 20px; border: 1px solid var(--line); border-radius: 15px; background: #1c2317; }
+    .preview-label { color: var(--lime); font-size: 9px; letter-spacing: .12em; }
+    .preview-title { margin: 13px 0 6px; font-size: 16px; }
+    .preview-copy { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .use-cases { display: grid; grid-template-columns: 1.05fr .95fr; gap: 12px; }
+    .use-case { position: relative; min-height: 270px; padding: 25px; border: 1px solid var(--line); border-radius: 17px; overflow: hidden; background: var(--panel); }
+    .use-case.large { min-height: 380px; background: linear-gradient(145deg, #303a21, #171d13); }
+    .use-case::after { content: ""; position: absolute; width: 180px; height: 180px; right: -55px; bottom: -65px; border: 1px solid rgba(197, 216, 109, .22); border-radius: 50%; box-shadow: 0 0 0 24px rgba(197, 216, 109, .04), 0 0 0 48px rgba(197, 216, 109, .03); }
+    .use-case-label { color: var(--lime); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
+    .use-case h3 { max-width: 400px; margin: 58px 0 9px; font-family: "Instrument Serif"; font-size: 42px; font-weight: 400; line-height: .9; }
+    .use-case:not(.large) h3 { margin-top: 35px; font-family: "Inter"; font-size: 19px; font-weight: 600; line-height: 1.1; }
+    .use-case p { max-width: 330px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .use-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .integration-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+    .integration-pill { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 10px; }
+    .integration-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
+    .quote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .quote { min-height: 235px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+    .quote-mark { color: var(--lime); font-family: "Instrument Serif"; font-size: 36px; line-height: .7; }
+    .quote p { margin: 22px 0 24px; color: var(--ink); font-family: "Instrument Serif"; font-size: 24px; line-height: 1.02; }
+    .quote footer { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; color: var(--muted); font-size: 10px; }
+    .quote footer b { color: var(--ink); font-size: 11px; }
+    .faq { display: grid; grid-template-columns: .7fr 1.3fr; gap: 80px; }
+    .faq h2 { margin-top: 15px; font-size: clamp(48px, 6vw, 78px); line-height: .87; }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-question { display: flex; justify-content: space-between; gap: 20px; width: 100%; padding: 19px 0; border: 0; color: var(--ink); background: transparent; text-align: left; font-size: 13px; }
+    .faq-question span { color: var(--lime); font-size: 19px; transition: transform .25s ease; }
+    .faq-answer { max-height: 0; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 1.6; transition: max-height .35s ease, padding .35s ease; }
+    .faq-item.open .faq-answer { max-height: 100px; padding: 0 35px 18px 0; }
+    .faq-item.open .faq-question span { transform: rotate(45deg); }
     footer { display: flex; justify-content: space-between; gap: 20px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
     footer strong { color: var(--ink); }
     .reveal { opacity: 0; transform: translateY(28px); }
@@ -152,6 +197,10 @@
       .feature-grid { grid-template-columns: 1fr; }
       .feature-card { min-height: 235px; }
       .feature-card h3 { margin-top: 46px; }
+      .stats, .quote-grid { grid-template-columns: 1fr 1fr; }
+      .workflow, .use-cases, .faq { grid-template-columns: 1fr; gap: 40px; }
+      .use-case.large { min-height: 300px; }
+      .use-case-grid { grid-template-columns: 1fr 1fr; }
       .stack { min-height: 375px; }
       .stack-card { width: 84%; }
       footer { display: block; line-height: 2; }
@@ -215,6 +264,65 @@
       </div>
     </section>
 
+    <section class="shell section">
+      <div class="stats reveal">
+        <article class="stat"><strong>26+</strong><span>agentes especializados no seu workspace</span></article>
+        <article class="stat"><strong>5×</strong><span>mais contexto entre uma ideia e sua execução</span></article>
+        <article class="stat"><strong>24/7</strong><span>tarefas prontas para rodar no seu ritmo</span></article>
+        <article class="stat"><strong>01</strong><span>lugar para pensar, criar e entregar</span></article>
+      </div>
+    </section>
+
+    <section class="shell section" id="fluxo">
+      <div class="workflow">
+        <div class="workflow-intro reveal"><span class="eyebrow"><i></i> Como o Orbit pensa</span><h2>Da pergunta ao próximo passo.</h2><p>Você traz a intenção. O Orbit organiza o contexto, aciona a inteligência certa e devolve algo que dá para usar.</p></div>
+        <div class="reveal">
+          <div class="workflow-tabs">
+            <button class="workflow-tab active" data-workflow="0"><b>01</b><span><strong>Entenda</strong><small>O contexto certo antes da resposta</small></span><em>→</em></button>
+            <button class="workflow-tab" data-workflow="1"><b>02</b><span><strong>Orquestre</strong><small>O especialista mais adequado para o desafio</small></span><em>→</em></button>
+            <button class="workflow-tab" data-workflow="2"><b>03</b><span><strong>Execute</strong><small>Uma saída clara, acionável e conectada</small></span><em>→</em></button>
+          </div>
+          <div class="workflow-preview"><span class="preview-label" id="workflowLabel">ETAPA 01 / CONTEXTO</span><h3 class="preview-title" id="workflowTitle">Tudo começa pelo que você realmente quer resolver.</h3><p class="preview-copy" id="workflowCopy">O Orbit lê sua intenção, identifica o tipo de trabalho e reúne os sinais importantes antes de responder.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dark-band">
+      <div class="shell section">
+        <div class="section-intro reveal"><div><span class="eyebrow"><i></i> Feito para o trabalho real</span><h2>Uma ferramenta que acompanha o seu dia, não atrapalha.</h2></div><p>Do primeiro rascunho à última decisão, o Orbit se adapta ao jeito que você trabalha.</p></div>
+        <div class="use-cases">
+          <article class="use-case large reveal"><span class="use-case-label">PARA QUEM CONSTRÓI</span><h3>Seu time técnico ganhou mais uma camada de pensamento.</h3><p>Revise código, investigue bugs, planeje arquitetura e escreva testes sem sair do fluxo.</p><div class="integration-strip"><span class="integration-pill"><i></i> GitHub</span><span class="integration-pill"><i></i> Code review</span><span class="integration-pill"><i></i> Arquitetura</span></div></article>
+          <div class="use-case-grid">
+            <article class="use-case reveal"><span class="use-case-label">PARA QUEM DECIDE</span><h3>Menos opinião. Mais clareza.</h3><p>Compare cenários, explicite riscos e chegue a uma escolha com confiança.</p></article>
+            <article class="use-case reveal"><span class="use-case-label">PARA QUEM CRIA</span><h3>Comece grande. Edite depois.</h3><p>Brainstorms, nomes, campanhas e novas possibilidades para tirar a página em branco do caminho.</p></article>
+            <article class="use-case reveal"><span class="use-case-label">PARA QUEM ORGANIZA</span><h3>Seu próximo passo já está aqui.</h3><p>Transforme reuniões, ideias e listas em tarefas com prioridade, prazo e dono.</p></article>
+            <article class="use-case reveal"><span class="use-case-label">PARA QUEM APRENDE</span><h3>Entenda de verdade.</h3><p>Explicações simples, exemplos vivos e profundidade quando você quiser ir além.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section">
+      <div class="section-intro reveal"><div><span class="eyebrow"><i></i> Pessoas em movimento</span><h2>Não precisa acreditar na gente.</h2></div><p>O melhor jeito de entender o Orbit é abrir uma conversa e ver uma ideia ganhar forma.</p></div>
+      <div class="quote-grid">
+        <article class="quote reveal"><span class="quote-mark">“</span><p>Finalmente um workspace que entende que IA é mais do que perguntar e copiar.</p><footer><b>Marina K.</b><span>Produto</span></footer></article>
+        <article class="quote reveal"><span class="quote-mark">“</span><p>O Router tira o peso de escolher modelo. Eu só descrevo o problema e começo.</p><footer><b>João D.</b><span>Engenharia</span></footer></article>
+        <article class="quote reveal"><span class="quote-mark">“</span><p>Da reunião para um plano executável em minutos. É exatamente o que eu precisava.</p><footer><b>Ana S.</b><span>Operações</span></footer></article>
+      </div>
+    </section>
+
+    <section class="shell section" id="duvidas">
+      <div class="faq">
+        <div class="reveal"><span class="eyebrow"><i></i> Ainda pensando?</span><h2>As perguntas que você faria.</h2></div>
+        <div class="faq-list reveal">
+          <div class="faq-item open"><button class="faq-question">O Orbit é só um chat? <span>＋</span></button><div class="faq-answer">Não. Ele reúne chat multimodal, agentes especializados, biblioteca de prompts, tarefas, GitHub, consumo e configurações em um único workspace.</div></div>
+          <div class="faq-item"><button class="faq-question">Posso usar meus próprios modelos? <span>＋</span></button><div class="faq-answer">Sim. O workspace permite configurar modelos por função e usar a infraestrutura compatível da Groq.</div></div>
+          <div class="faq-item"><button class="faq-question">Minhas conversas ficam públicas? <span>＋</span></button><div class="faq-answer">O projeto funciona no navegador e a chave pode ficar localmente no dispositivo. Para equipes, recomendamos adicionar um backend seguro antes de publicar.</div></div>
+          <div class="faq-item"><button class="faq-question">Por onde eu começo? <span>＋</span></button><div class="faq-answer">Abra o workspace, configure sua chave Groq e escolha um prompt pronto — ou simplesmente escreva o que precisa.</div></div>
+        </div>
+      </div>
+    </section>
+
     <section class="shell cta" id="manifesto">
       <span class="eyebrow reveal"><i></i> O próximo passo começa aqui</span>
       <h2 class="reveal">Seu melhor trabalho ainda está por vir.</h2>
@@ -246,6 +354,22 @@
       tiltCard.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     });
     tiltCard?.addEventListener('pointerleave', () => { tiltCard.style.transform = ''; });
+    const workflowContent = [
+      ['ETAPA 01 / CONTEXTO', 'Tudo começa pelo que você realmente quer resolver.', 'O Orbit lê sua intenção, identifica o tipo de trabalho e reúne os sinais importantes antes de responder.'],
+      ['ETAPA 02 / AGENTE', 'A inteligência certa entra em cena.', 'O Router direciona seu pedido para especialistas em código, análise, escrita, dados, estratégia ou criatividade.'],
+      ['ETAPA 03 / AÇÃO', 'A resposta já nasce pronta para o próximo passo.', 'Você recebe uma saída clara, pode salvar como tarefa, conectar ao GitHub ou continuar refinando a ideia.']
+    ];
+    document.querySelectorAll('[data-workflow]').forEach((tab) => tab.addEventListener('click', () => {
+      document.querySelectorAll('[data-workflow]').forEach((item) => item.classList.toggle('active', item === tab));
+      const content = workflowContent[Number(tab.dataset.workflow)];
+      ['workflowLabel', 'workflowTitle', 'workflowCopy'].forEach((id, index) => { document.getElementById(id).textContent = content[index]; });
+      if (window.gsap) gsap.fromTo('.workflow-preview', { opacity: .35, y: 8 }, { opacity: 1, y: 0, duration: .35, ease: 'power2.out' });
+    }));
+    document.querySelectorAll('.faq-question').forEach((question) => question.addEventListener('click', () => {
+      const item = question.closest('.faq-item');
+      document.querySelectorAll('.faq-item').forEach((other) => { if (other !== item) other.classList.remove('open'); });
+      item.classList.toggle('open');
+    }));
   </script>
 </body>
 </html>
