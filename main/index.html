@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171714">
+  <title>Orbit · Workspace de IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f3ef;
+      --surface: #fffefa;
+      --surface-soft: #f7f6f1;
+      --ink: #191917;
+      --muted: #77766f;
+      --line: #e5e3db;
+      --line-strong: #d3d0c6;
+      --brand: #9bab55;
+      --brand-dark: #79863d;
+      --brand-soft: #eef1dc;
+      --green: #798f53;
+      --sidebar: #171714;
+      --sidebar-soft: #292a24;
+      --sidebar-muted: #a4a49a;
+      --shadow: 0 18px 45px rgba(37, 37, 29, .08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Inter", "DM Sans", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      overflow: hidden;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    .app { display: flex; height: 100vh; }
+
+    .sidebar {
+      width: 270px;
+      flex: 0 0 270px;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      background: var(--sidebar);
+      padding: 22px 16px 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; margin: 0 8px 26px; }
+    .brand-mark {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      border-radius: 12px; color: #fff; font-weight: 700;
+      background: linear-gradient(135deg, #c2cf79, #798f53);
+      box-shadow: 0 8px 20px rgba(155, 171, 85, .2);
+    }
+    .brand strong { display: block; font-family: "Space Grotesk"; font-size: 17px; letter-spacing: -.03em; }
+    .brand small { display: block; color: var(--sidebar-muted); font-size: 11px; margin-top: 2px; }
+    .new-chat {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%; border: 0; border-radius: 11px; padding: 12px;
+      color: #1b1b16; background: var(--brand); font-weight: 600;
+      box-shadow: 0 8px 18px rgba(155, 171, 85, .2);
+      transition: .2s;
+    }
+    .new-chat:hover { background: #b6c66b; transform: translateY(-1px); }
+    .sidebar-label { color: #697891; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; margin: 25px 10px 9px; }
+    .nav-list, .conversation-list { display: grid; gap: 4px; }
+    .nav-item, .conversation {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      border: 0; border-radius: 9px; padding: 10px 11px; text-align: left;
+      color: var(--sidebar-muted); background: transparent; font-size: 13px;
+    }
+    .nav-item:hover, .nav-item.active, .conversation:hover, .conversation.active { color: #fff; background: var(--sidebar-soft); }
+    .nav-item .count { margin-left: auto; font-size: 11px; color: #6d7d98; }
+    .conversation { gap: 8px; overflow: hidden; }
+    .conversation span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .conversation .dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; background: #39c7aa; }
+    .sidebar-spacer { flex: 1; }
+    .usage { padding: 13px; border: 1px solid #26334a; border-radius: 12px; background: #141f32; }
+    .usage-head { display: flex; justify-content: space-between; font-size: 11px; color: var(--sidebar-muted); }
+    .usage-head strong { color: #fff; font-weight: 500; }
+    .progress { height: 5px; background: #29374e; border-radius: 10px; overflow: hidden; margin: 10px 0 7px; }
+    .progress i { display: block; height: 100%; width: 68%; border-radius: inherit; background: linear-gradient(90deg, #9bab55, #d0d98f); }
+    .usage small { color: #687995; font-size: 10px; }
+    .profile { display: flex; align-items: center; gap: 9px; padding: 16px 7px 0; }
+    .avatar { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 10px; color: #fff; font-weight: 700; font-size: 12px; background: linear-gradient(135deg, #ef8e68, #e64f7c); }
+    .profile div:last-child { min-width: 0; }
+    .profile strong, .profile small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .profile strong { font-size: 12px; }
+    .profile small { font-size: 10px; color: var(--sidebar-muted); margin-top: 2px; }
+
+    .workspace { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+    .topbar {
+      height: 70px; flex: 0 0 70px; display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; padding: 0 30px; border-bottom: 1px solid var(--line); background: var(--surface);
+    }
+    .crumbs { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
+    .crumbs strong { color: var(--ink); font-size: 14px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn, .top-button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      border: 1px solid var(--line); border-radius: 9px; min-width: 34px; height: 34px;
+      color: var(--muted); background: var(--surface); transition: .2s;
+    }
+    .icon-btn:hover, .top-button:hover { color: var(--brand); border-color: #bbb8ff; background: var(--brand-soft); }
+    .top-button { padding: 0 11px; font-size: 12px; }
+    .online { display: flex; align-items: center; gap: 6px; margin-left: 5px; color: var(--muted); font-size: 11px; }
+    .online i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px #d8f8ed; }
+
+    .main { display: flex; min-height: 0; flex: 1; }
+    .chat-column { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+    .chat { overflow-y: auto; flex: 1; padding: 34px clamp(18px, 5vw, 82px) 25px; }
+    .welcome { max-width: 790px; margin: 12px auto 30px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 7px; color: var(--brand); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+    .welcome h1 { margin: 13px 0 8px; font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: clamp(38px, 5vw, 63px); line-height: .98; letter-spacing: -.035em; }
+    .welcome p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.65; max-width: 560px; }
+    .suggestions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 790px; margin: 0 auto 34px; }
+    .suggestion { border: 1px solid var(--line); background: var(--surface); border-radius: 13px; text-align: left; padding: 14px; color: var(--ink); transition: .2s; }
+    .suggestion:hover { border-color: #b6c479; box-shadow: var(--shadow); transform: translateY(-2px); }
+    .suggestion b { display: block; margin-bottom: 5px; color: var(--brand); font-size: 17px; }
+    .suggestion strong { display: block; font-size: 12px; margin-bottom: 4px; }
+    .suggestion span { display: block; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .message { display: flex; gap: 12px; max-width: 790px; margin: 0 auto 24px; animation: appear .25s ease; }
+    @keyframes appear { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    .message-avatar { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: #fff; font-size: 11px; font-weight: 700; }
+    .message.user .message-avatar { background: linear-gradient(135deg, #77766b, #393a32); }
+    .message.assistant .message-avatar { background: linear-gradient(135deg, #b4c36c, #798f53); }
+    .message-body { min-width: 0; flex: 1; }
+    .message-meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; margin: 1px 0 7px; }
+    .message-meta strong { color: var(--ink); font-size: 12px; }
+    .bubble { color: #344054; font-size: 14px; line-height: 1.75; white-space: normal; word-break: break-word; }
+    .assistant .bubble p { margin: 0 0 12px; }
+    .assistant .bubble p:last-child { margin-bottom: 0; }
+    .assistant .bubble h3, .assistant .bubble h4 { margin: 18px 0 8px; color: var(--ink); font-family: "Inter", sans-serif; line-height: 1.25; }
+    .assistant .bubble h3 { font-size: 17px; } .assistant .bubble h4 { font-size: 14px; }
+    .assistant .bubble ul, .assistant .bubble ol { margin: 8px 0 14px; padding-left: 22px; }
+    .assistant .bubble li { margin: 4px 0; }
+    .assistant .bubble strong { color: var(--ink); font-weight: 700; }
+    .assistant .bubble em { color: #657187; }
+    .assistant .bubble code { padding: 2px 5px; border-radius: 5px; color: #b4235a; background: #f7eaf0; font: 12px/1.5 "SFMono-Regular", Consolas, monospace; }
+    .assistant .bubble pre { overflow: auto; margin: 12px 0; padding: 13px 15px; border: 1px solid var(--line); border-radius: 10px; color: #dce5f5; background: #172033; }
+    .assistant .bubble pre code { padding: 0; color: inherit; background: transparent; }
+    .assistant .bubble blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--brand); color: var(--muted); background: var(--brand-soft); }
+    .message.user .bubble { display: inline-block; padding: 11px 14px; color: #fff; background: #4b4c42; border-radius: 4px 14px 14px 14px; white-space: pre-wrap; }
+    .message-actions { display: flex; gap: 4px; margin-top: 8px; }
+    .message-actions button { padding: 3px 6px; border: 0; background: transparent; color: #a0a9b8; font-size: 11px; }
+    .message-actions button:hover { color: var(--brand); }
+    .typing { display: flex; gap: 4px; padding: 8px 0; }
+    .typing i { width: 6px; height: 6px; border-radius: 50%; background: #a4a9bd; animation: bounce 1s infinite; }
+    .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 50% { transform: translateY(-4px); opacity: .5; } }
+
+    .composer-wrap { padding: 14px clamp(18px, 5vw, 82px) 22px; background: linear-gradient(transparent, var(--bg) 20%); }
+    .composer { max-width: 790px; margin: auto; border: 1px solid var(--line-strong); border-radius: 16px; padding: 10px 12px 9px; background: var(--surface); box-shadow: 0 10px 35px rgba(37, 51, 82, .08); }
+    .composer:focus-within { border-color: #aaa6ff; box-shadow: 0 0 0 4px var(--brand-soft), 0 10px 35px rgba(37, 51, 82, .08); }
+    .composer textarea { width: 100%; min-height: 27px; max-height: 130px; padding: 4px 4px 8px; border: 0; outline: 0; resize: none; color: var(--ink); background: transparent; line-height: 1.5; font-size: 14px; }
+    .composer textarea::placeholder { color: #a4adbb; }
+    .attachment-list { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px 3px 8px; }
+    .attachment { position: relative; width: 58px; height: 58px; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-soft); }
+    .attachment img { width: 100%; height: 100%; object-fit: cover; }
+    .attachment button { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; color: #fff; background: rgba(15, 23, 42, .75); font-size: 13px; line-height: 18px; }
+    .attachment-name { display: flex; align-items: center; gap: 6px; max-width: 180px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 10px; }
+    .bubble-images { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .bubble-images img { width: 145px; max-height: 125px; object-fit: cover; border-radius: 9px; border: 1px solid rgba(255,255,255,.25); }
+    .composer-tools { display: flex; align-items: center; justify-content: space-between; }
+    .tool-group { display: flex; gap: 3px; }
+    .tool-btn { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 7px; padding: 7px 8px; color: var(--muted); background: transparent; font-size: 11px; }
+    .tool-btn:hover { color: var(--brand); background: var(--brand-soft); }
+    .send { width: 35px; height: 35px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 10px; color: #fff; background: var(--brand); font-size: 15px; transition: .2s; }
+    .send:hover { background: var(--brand-dark); transform: translateY(-1px); }
+    .composer-hint { max-width: 790px; margin: 8px auto 0; color: #9aa4b4; font-size: 10px; text-align: center; }
+
+    .settings { width: 270px; flex: 0 0 270px; border-left: 1px solid var(--line); background: var(--surface); padding: 27px 20px; overflow: auto; }
+    .settings h2 { margin: 0; font-family: "Space Grotesk"; font-size: 17px; letter-spacing: -.03em; }
+    .settings-intro { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 6px 0 23px; }
+    .setting { padding: 17px 0; border-top: 1px solid var(--line); }
+    .setting label, .setting-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #566176; font-size: 11px; font-weight: 600; }
+    .setting label span { color: var(--brand); font-weight: 700; }
+    .setting select { width: 100%; margin-top: 9px; border: 1px solid var(--line); border-radius: 8px; padding: 9px; color: var(--ink); background: var(--surface-soft); outline: none; font-size: 11px; }
+    .range { width: 100%; margin-top: 14px; accent-color: var(--brand); }
+    .range-values { display: flex; justify-content: space-between; color: #a0a8b7; font-size: 10px; margin-top: 3px; }
+    .key-status { display: flex; align-items: center; gap: 7px; margin: 11px 0; color: var(--muted); font-size: 11px; }
+    .key-status i { width: 7px; height: 7px; border-radius: 50%; background: #f2b84b; }
+    .key-status.connected i { background: var(--green); }
+    .key-input { display: flex; gap: 5px; }
+    .key-input input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 8px; color: var(--ink); outline: none; font-size: 10px; }
+    .key-input button { border: 0; border-radius: 8px; padding: 0 10px; color: #fff; background: var(--brand); font-size: 11px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; color: #566176; font-size: 11px; margin-top: 15px; }
+    .toggle { position: relative; width: 31px; height: 18px; border: 0; border-radius: 20px; background: #ccd3df; }
+    .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: .2s; }
+    .toggle.on { background: var(--brand); } .toggle.on::after { left: 16px; }
+    .tip { padding: 12px; border-radius: 10px; color: #5b5ba7; background: var(--brand-soft); font-size: 10px; line-height: 1.5; }
+    .feature-actions { display: grid; gap: 7px; }
+    .feature-action { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface-soft); text-align: left; font-size: 11px; }
+    .feature-action:hover { border-color: #aaa6ff; color: var(--brand); }
+    .feature-action span { color: var(--muted); font-size: 10px; }
+    dialog { width: min(680px, calc(100vw - 28px)); max-height: 88vh; overflow: auto; padding: 0; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: var(--surface); box-shadow: 0 25px 80px rgba(15, 23, 42, .24); }
+    dialog::backdrop { background: rgba(15, 23, 42, .52); backdrop-filter: blur(3px); }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 19px 21px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-family: "Space Grotesk"; font-size: 17px; }
+    .dialog-close { width: 28px; height: 28px; border: 0; border-radius: 7px; color: var(--muted); background: transparent; }
+    .dialog-close:hover { background: var(--brand-soft); color: var(--brand); }
+    .dialog-body { padding: 18px 21px 21px; }
+    .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 360px; overflow: auto; }
+    .agent-card { border: 1px solid var(--line); border-radius: 10px; padding: 11px; color: var(--ink); background: var(--surface-soft); text-align: left; }
+    .agent-card:hover, .agent-card.active { border-color: var(--brand); background: var(--brand-soft); }
+    .agent-card strong { display: block; font-size: 12px; } .agent-card small { display: block; color: var(--muted); margin-top: 4px; font-size: 10px; }
+    .prompt-list { display: grid; gap: 8px; }
+    .prompt-preset { width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: var(--surface-soft); text-align: left; font-size: 11px; }
+    .prompt-preset:hover { border-color: var(--brand); background: var(--brand-soft); }
+    .form-grid { display: grid; gap: 10px; } .form-grid label { display: grid; gap: 5px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .form-grid input, .form-grid select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px; color: var(--ink); background: var(--surface-soft); outline: none; font-size: 12px; }
+    .dialog-submit { margin-top: 14px; border: 0; border-radius: 8px; padding: 10px 14px; color: #fff; background: var(--brand); font-size: 12px; font-weight: 600; }
+    .task-list, .github-result { display: grid; gap: 8px; margin-top: 15px; }
+    .task-item, .github-item { display: flex; justify-content: space-between; gap: 12px; padding: 11px; border: 1px solid var(--line); border-radius: 9px; font-size: 11px; }
+    .task-item strong, .github-item strong { display: block; font-size: 12px; } .task-item small, .github-item small { color: var(--muted); }
+    .task-item button { border: 0; color: #dc5d6e; background: transparent; font-size: 11px; }
+    .github-toolbar { display: flex; gap: 8px; } .github-toolbar input { flex: 1; }
+    .page-view { display: none; flex: 1; overflow: auto; padding: 46px clamp(22px, 5vw, 76px) 60px; }
+    .page-view.active { display: block; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; max-width: 1050px; margin: 0 auto 30px; }
+    .page-heading h1 { margin: 12px 0 7px; color: var(--ink); font-family: "Instrument Serif", Georgia, serif; font-size: clamp(38px, 5vw, 62px); font-weight: 400; letter-spacing: -.04em; line-height: .96; }
+    .page-heading p { max-width: 600px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .primary-action, .outline-action, .danger-action { border-radius: 9px; padding: 10px 13px; font-size: 11px; font-weight: 600; transition: .2s; }
+    .primary-action { border: 0; color: #1b1b16; background: var(--brand); } .primary-action:hover { background: #b7c66c; transform: translateY(-2px); }
+    .outline-action { border: 1px solid var(--line-strong); color: var(--ink); background: var(--surface); } .outline-action:hover { border-color: var(--brand); background: var(--brand-soft); }
+    .danger-action { border: 1px solid #e8cfd0; color: #a64c55; background: #fff7f6; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; max-width: 1050px; margin: 0 auto 14px; }
+    .metric-card, .big-card, .integration-card { border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: var(--shadow); }
+    .metric-card { padding: 17px; } .metric-card span, .metric-card small { display: block; color: var(--muted); font-size: 10px; } .metric-card strong { display: block; margin: 14px 0 8px; color: var(--ink); font-family: "Instrument Serif"; font-size: 35px; font-weight: 400; } .metric-card small { color: var(--brand-dark); } .metric-card.accent { background: #292a24; } .metric-card.accent span, .metric-card.accent small { color: #c3c6b7; } .metric-card.accent strong { color: #e4e6d3; }
+    .dashboard-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; max-width: 1050px; margin: 0 auto; }
+    .big-card { padding: 20px; } .card-title { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; } .card-title span { display: block; color: var(--ink); font-size: 13px; font-weight: 700; } .card-title small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; } .card-icon { color: var(--brand); font-size: 20px; }
+    .activity-bars { display: flex; align-items: flex-end; justify-content: space-around; height: 145px; padding: 0 10px; border-bottom: 1px solid var(--line); } .activity-bars i { width: 9%; min-height: 10px; border-radius: 8px 8px 2px 2px; background: linear-gradient(180deg, #c2cf79, #798f53); }
+    .days { display: flex; justify-content: space-around; padding: 10px 0 0; color: var(--muted); font-size: 9px; }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; } .quick-grid button { display: flex; justify-content: space-between; padding: 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: var(--surface-soft); text-align: left; font-size: 11px; } .quick-grid button:hover { border-color: var(--brand); } .quick-grid b { color: var(--brand-dark); }
+    .library-grid, .agent-overview, .integration-grid, .settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 1050px; margin: 0 auto; }
+    .library-card, .agent-overview-card { min-height: 135px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); } .library-card h3, .agent-overview-card h3 { margin: 0 0 8px; font-size: 14px; } .library-card p, .agent-overview-card p { margin: 0 0 16px; color: var(--muted); font-size: 11px; line-height: 1.5; } .library-card button { border: 0; color: var(--brand-dark); background: transparent; font-size: 11px; }
+    .integration-card { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px; } .integration-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #1b1b16; background: var(--brand); font-size: 11px; font-weight: 700; } .integration-card h3 { margin: 0 0 5px; font-size: 14px; } .integration-card p { min-height: 34px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .empty-files { padding: 55px 20px; text-align: center; } .empty-files > span { display: block; margin-bottom: 13px; color: var(--brand); font-size: 36px; } .empty-files h3 { margin: 0 0 6px; font-size: 15px; } .empty-files p { margin: 0 auto 18px; color: var(--muted); font-size: 11px; }
+    .settings-grid { grid-template-columns: 1fr 1fr; } .settings-section { min-height: 250px; } .setting-line { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 13px 0; border-top: 1px solid var(--line); color: var(--ink); font-size: 12px; } .setting-line select { min-width: 145px; padding: 7px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: var(--surface-soft); font-size: 11px; }
+
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 20; padding: 11px 15px; border-radius: 10px; color: #fff; background: #202b40; box-shadow: var(--shadow); font-size: 12px; transform: translateY(20px); opacity: 0; pointer-events: none; transition: .25s; }
+    .toast.show { transform: none; opacity: 1; }
+    .mobile-only { display: none; }
+    body.dark { --bg: #151513; --surface: #20211d; --surface-soft: #292a24; --ink: #f0f0e8; --muted: #a8a99d; --line: #393a32; --line-strong: #4a4b41; --shadow: 0 18px 45px rgba(0,0,0,.2); }
+    body.dark .bubble { color: #d6deed; } body.dark .topbar, body.dark .settings { background: var(--surface); }
+    @media (max-width: 1050px) { .settings { display: none; } .metric-grid { grid-template-columns: repeat(2, 1fr); } .library-grid, .agent-overview, .integration-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 720px) {
+      body { overflow: auto; } .app { min-height: 100vh; height: auto; }
+      .sidebar { width: 100%; height: auto; min-height: 0; padding: 13px; }
+      .sidebar .sidebar-label, .sidebar .nav-list, .sidebar .conversation-list, .sidebar .usage, .sidebar .profile { display: none; }
+      .brand { margin: 0 5px; } .new-chat { position: absolute; top: 13px; right: 13px; width: auto; padding: 9px 12px; font-size: 0; } .new-chat svg { margin: 0; }
+      .workspace { min-height: calc(100vh - 63px); } .topbar { height: 58px; flex-basis: 58px; padding: 0 14px; } .top-button span { display: none; }
+      .chat { padding: 24px 14px 15px; } .suggestions { grid-template-columns: 1fr; margin-bottom: 24px; } .welcome h1 { font-size: 42px; } .page-view { padding: 28px 14px; } .page-heading { display: block; } .page-heading .primary-action { margin-top: 18px; } .metric-grid, .dashboard-grid, .library-grid, .agent-overview, .integration-grid, .settings-grid { grid-template-columns: 1fr; }
+      .composer-wrap { padding: 12px 14px 18px; } .composer-hint { display: none; } .tool-btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">✦</div><div><strong>Orbit AI</strong><small>Seu workspace inteligente</small></div></div>
+      <button class="new-chat" id="newChat"><span>＋</span> Nova conversa</button>
+      <div class="sidebar-label">Workspace</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="chat"><span>⌂</span> Início</button>
+        <button class="nav-item" data-view="dashboard"><span>◈</span> Visão geral</button>
+        <button class="nav-item" data-view="prompts"><span>✦</span> Biblioteca de prompts</button>
+        <button class="nav-item" data-view="agents"><span>◌</span> Agentes e modelos</button>
+        <button class="nav-item" data-view="tasks"><span>◷</span> Tarefas <span class="count">4</span></button>
+        <button class="nav-item" data-view="integrations"><span>⌁</span> Integrações</button>
+        <button class="nav-item" data-view="files"><span>□</span> Arquivos</button>
+        <button class="nav-item" data-view="settings"><span>⚙</span> Configurações</button>
+      </nav>
+      <div class="sidebar-label">Conversas recentes</div>
+      <div class="conversation-list" id="conversationList">
+        <button class="conversation active"><i class="dot"></i><span>Planejamento da semana</span></button>
+        <button class="conversation"><i class="dot" style="background:#8c78ff"></i><span>Ideias para o projeto</span></button>
+        <button class="conversation"><i class="dot" style="background:#e8a84a"></i><span>Revisão de código</span></button>
+        <button class="conversation"><i class="dot" style="background:#7f8ca4"></i><span>Resumo da reunião</span></button>
+      </div>
+      <div class="sidebar-spacer"></div>
+      <div class="usage"><div class="usage-head"><span>Consumo da sessão</span><strong id="usagePercent">0%</strong></div><div class="progress"><i id="usageProgress"></i></div><small id="usageSummary">0 mensagens · 0 tokens estimados</small></div>
+      <div class="profile"><div class="avatar">AS</div><div><strong>Aprendiz Silva</strong><small>Plano gratuito</small></div></div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div class="crumbs"><span>Workspace</span><b>/</b><strong id="conversationTitle">Planejamento da semana</strong></div>
+        <div class="top-actions">
+          <button class="top-button" id="agentsBtn">✦ <span>Agentes</span></button>
+          <button class="top-button" id="tasksBtn">◷ <span>Tarefas</span></button>
+          <button class="top-button" id="githubBtn">◉ <span>GitHub</span></button>
+          <button class="top-button" id="exportBtn">↓ <span>Exportar</span></button>
+          <button class="icon-btn" id="themeBtn" title="Alternar tema">☾</button>
+          <span class="online"><i></i> Online</span>
+        </div>
+      </header>
+
+      <div class="main">
+        <section class="chat-column">
+          <div class="chat" id="chat">
+            <div class="welcome" id="welcome">
+              <span class="eyebrow"><i></i> Assistente pessoal</span>
+              <h1>O que vamos criar hoje?</h1>
+              <p>Transforme ideias em planos, textos e decisões. Estou pronto para ajudar você a avançar.</p>
+            </div>
+            <section class="page-view" id="dashboardView">
+              <div class="page-heading"><div><span class="eyebrow"><i></i> Seu workspace</span><h1>Visão geral</h1><p>Um centro de comando para suas conversas, tarefas e automações.</p></div><button class="primary-action" data-view-open="chat">Abrir chat <span>↗</span></button></div>
+              <div class="metric-grid"><article class="metric-card"><span>Mensagens este mês</span><strong id="dashMessages">0</strong><small>↗ consumo acompanhado</small></article><article class="metric-card"><span>Tokens estimados</span><strong id="dashTokens">0</strong><small>da sua atividade recente</small></article><article class="metric-card"><span>Tarefas ativas</span><strong id="dashTasks">0</strong><small>agendadas neste dispositivo</small></article><article class="metric-card accent"><span>Agente mais usado</span><strong id="dashAgent">Router</strong><small>roteamento automático</small></article></div>
+              <div class="dashboard-grid"><article class="big-card"><div class="card-title"><div><span>Atividade recente</span><small>Seu ritmo nos últimos dias</small></div><span class="card-icon">◒</span></div><div class="activity-bars"><i style="height:35%"></i><i style="height:56%"></i><i style="height:42%"></i><i style="height:78%"></i><i style="height:63%"></i><i style="height:91%"></i><i style="height:70%"></i></div><div class="days"><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span><span>DOM</span></div></article><article class="big-card"><div class="card-title"><div><span>Atalhos rápidos</span><small>Comece sem configurar nada</small></div><span class="card-icon">✦</span></div><div class="quick-grid"><button data-prompt-shortcut="Revise meu código e liste os riscos mais importantes.">Revisar código <b>↗</b></button><button data-prompt-shortcut="Organize minhas próximas tarefas por prioridade.">Organizar tarefas <b>↗</b></button><button data-prompt-shortcut="Resuma este conteúdo em decisões e próximos passos.">Resumir conteúdo <b>↗</b></button><button data-prompt-shortcut="Gere ideias novas e práticas para meu projeto.">Gerar ideias <b>↗</b></button></div></article></div>
+            </section>
+            <section class="page-view" id="promptsView"><div class="page-heading"><div><span class="eyebrow"><i></i> Biblioteca</span><h1>Prompts para tudo</h1><p>Fluxos prontos para transformar uma intenção em resultado.</p></div><button class="primary-action" id="newPrompt">Criar prompt <span>＋</span></button></div><div class="library-grid" id="promptLibrary"></div></section>
+            <section class="page-view" id="agentsView"><div class="page-heading"><div><span class="eyebrow"><i></i> Orquestração</span><h1>Agentes e modelos</h1><p>Escolha especialistas ou deixe o Router decidir por você.</p></div><button class="primary-action" id="openAgentDialog">Configurar agentes <span>↗</span></button></div><div class="agent-overview" id="agentOverview"></div></section>
+            <section class="page-view" id="tasksView"><div class="page-heading"><div><span class="eyebrow"><i></i> Automação</span><h1>Suas tarefas</h1><p>Planeje prompts para rodar no momento certo.</p></div><button class="primary-action" id="openTasksPage">Programar tarefa <span>＋</span></button></div><div class="big-card"><div class="card-title"><div><span>Fila de execução</span><small>Tarefas persistidas neste navegador</small></div></div><div class="task-list" id="tasksPageList"></div></div></section>
+            <section class="page-view" id="integrationsView"><div class="page-heading"><div><span class="eyebrow"><i></i> Conexões</span><h1>Integrações</h1><p>Conecte as ferramentas que fazem parte do seu trabalho.</p></div></div><div class="integration-grid"><article class="integration-card"><div class="integration-logo">GH</div><div><h3>GitHub</h3><p>Repositórios, issues e links para seu fluxo de desenvolvimento.</p></div><button class="outline-action" id="openGithubPage">Configurar</button></article><article class="integration-card"><div class="integration-logo">◎</div><div><h3>Groq API</h3><p>Modelos, limites, transcrição, voz e visão em um só workspace.</p></div><button class="outline-action" data-view-open="settings">Ver configuração</button></article><article class="integration-card"><div class="integration-logo">↗</div><div><h3>Webhooks</h3><p>Receba eventos de sistemas externos no seu gateway de agentes.</p></div><button class="outline-action" id="webhookInfo">Em breve</button></article></div></section>
+            <section class="page-view" id="filesView"><div class="page-heading"><div><span class="eyebrow"><i></i> Contexto</span><h1>Arquivos e referências</h1><p>Imagens anexadas e materiais usados nas suas conversas.</p></div><button class="primary-action" id="uploadPageFile">Adicionar arquivo <span>＋</span></button></div><div class="big-card"><div class="empty-files"><span>□</span><h3>Nenhum arquivo salvo</h3><p>Anexe imagens no chat para analisá-las com o agente de visão.</p><button class="outline-action" data-view-open="chat">Ir para o chat</button></div></div></section>
+            <section class="page-view" id="settingsView"><div class="page-heading"><div><span class="eyebrow"><i></i> Preferências</span><h1>Configurações</h1><p>Controle sua experiência, privacidade e comportamento dos agentes.</p></div><button class="primary-action" id="saveAllSettings">Salvar alterações <span>✓</span></button></div><div class="settings-grid"><article class="big-card settings-section"><div class="card-title"><div><span>Interface</span><small>Personalize seu workspace</small></div></div><label class="setting-line">Tema <select id="themePreference"><option value="light">Claro</option><option value="dark">Escuro</option></select></label><label class="setting-line">Idioma <select><option>Português (Brasil)</option><option>English</option></select></label><label class="setting-line">Animações <button class="toggle on" id="motionToggle"></button></label></article><article class="big-card settings-section"><div class="card-title"><div><span>Privacidade e dados</span><small>O que fica salvo neste dispositivo</small></div></div><label class="setting-line">Salvar histórico <button class="toggle on"></button></label><label class="setting-line">Armazenar chave localmente <button class="toggle" id="keyStorageToggle"></button></label><button class="danger-action" id="clearLocalData">Limpar dados locais</button></article></div></section>
+            <div class="suggestions" id="suggestions">
+              <button class="suggestion" data-prompt="Organize minha semana em um plano prático com prioridades e horários."><b>◫</b><strong>Organizar minha semana</strong><span>Prioridades, horários e foco</span></button>
+              <button class="suggestion" data-prompt="Crie cinco ideias criativas para um projeto digital que estou planejando."><b>✧</b><strong>Gerar novas ideias</strong><span>Explore possibilidades diferentes</span></button>
+              <button class="suggestion" data-prompt="Revise este texto e deixe a comunicação mais clara, objetiva e profissional: "><b>✎</b><strong>Melhorar um texto</strong><span>Clareza sem perder sua voz</span></button>
+            </div>
+          </div>
+          <div class="composer-wrap">
+            <div class="composer">
+              <div class="attachment-list" id="attachmentList"></div>
+              <textarea id="userInput" rows="1" placeholder="Pergunte qualquer coisa..."></textarea>
+              <div class="composer-tools">
+                <div class="tool-group">
+                  <button class="tool-btn" id="attachBtn">⌕ <span>Anexar</span></button>
+                  <button class="tool-btn" id="micBtn">◉ <span>Voz</span></button>
+                  <input type="file" id="fileInput" hidden multiple>
+                </div>
+                <button class="send" id="sendBtn" title="Enviar">➤</button>
+              </div>
+            </div>
+            <div class="composer-hint">Enter para enviar · Shift + Enter para nova linha · A IA pode cometer erros</div>
+          </div>
+        </section>
+
+        <aside class="settings">
+          <h2>Configurações</h2>
+          <p class="settings-intro">Ajuste o comportamento da IA para cada conversa.</p>
+          <div class="setting">
+            <div class="setting-head"><span>Modelos por função</span><span style="color:#10b981">● automático</span></div>
+            <select id="reasoningModel" aria-label="Modelo de raciocínio">
+              <option value="openai/gpt-oss-120b">Raciocínio · GPT OSS 120B</option>
+              <option value="openai/gpt-oss-20b">Raciocínio · GPT OSS 20B</option>
+              <option value="qwen/qwen3.8-27b">Raciocínio · Qwen 3.8 27B</option>
+            </select>
+            <select id="visionModel" aria-label="Modelo de visão">
+              <option value="qwen/qwen3.8-27b">Visão · Qwen 3.8 27B</option>
+              <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Visão · Llama 4 Maverick</option>
+              <option value="meta-llama/llama-4-scout-17b-16e-instruct">Visão · Llama 4 Scout</option>
+            </select>
+            <select id="safetyModel" aria-label="Modelo de segurança">
+              <option value="openai/gpt-oss-safeguard-20b">Segurança · GPT OSS Safeguard 20B</option>
+              <option value="meta-llama/llama-prompt-guard-2-86m">Segurança · Prompt Guard 86M</option>
+              <option value="meta-llama/llama-prompt-guard-2-22m">Segurança · Prompt Guard 22M</option>
+            </select>
+            <select id="sttModel" aria-label="Modelo de transcrição">
+              <option value="whisper-large-v3-turbo">Transcrição · Whisper Large v3 Turbo</option>
+              <option value="whisper-large-v3">Transcrição · Whisper Large v3</option>
+            </select>
+            <select id="ttsModel" aria-label="Modelo de voz">
+              <option value="canopylabs/orpheus-v1-english">Voz · Orpheus English</option>
+              <option value="canopylabs/orpheus-arabic-saudi">Voz · Orpheus Arabic Saudi</option>
+            </select>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><span>Atalhos</span><span style="color:#10b981">práticos</span></div>
+            <div class="feature-actions">
+              <button class="feature-action" id="openPrompts">Prompts prontos <span>abrir →</span></button>
+              <button class="feature-action" id="openTasks">Programar tarefa <span>abrir →</span></button>
+            </div>
+          </div>
+          <div class="setting">
+            <label for="temperature">Criatividade <span id="temperatureValue">0.7</span></label>
+            <input class="range" id="temperature" type="range" min="0" max="1" step=".1" value=".7">
+            <div class="range-values"><span>Preciso</span><span>Criativo</span></div>
+          </div>
+          <div class="setting">
+            <div class="key-status" id="keyStatus"><i></i><span>Chave não configurada</span></div>
+            <div class="key-input"><input type="password" id="apiKey" placeholder="Cole sua chave Groq"><button id="saveKey">Salvar</button></div>
+            <div class="toggle-row"><span>Memória da conversa</span><button class="toggle on" id="memoryToggle" aria-label="Memória ativa"></button></div>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><span>Consumo desta sessão</span><span id="sessionCost">saldo via Groq</span></div>
+            <div class="key-status"><i style="background:#8c78ff"></i><span id="sessionUsage">0 mensagens · 0 tokens</span></div>
+            <div class="key-status"><i style="background:#e8a84a"></i><span id="rateUsage">Limite da API ainda não consultado</span></div>
+            <small style="display:block;color:#9aa4b4;font-size:10px;line-height:1.45">A Groq não expõe o saldo financeiro nesta página. Os limites abaixo aparecem depois de uma chamada à API.</small>
+          </div>
+          <div class="setting"><div class="tip">Dica: peça um formato específico, como “responda em tópicos” ou “crie uma tabela”, para obter resultados melhores.</div></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+  <dialog id="agentsDialog">
+    <div class="dialog-head"><h2>Agentes especializados</h2><button class="dialog-close" data-close="agentsDialog">×</button></div>
+    <div class="dialog-body"><p class="settings-intro">Escolha um agente ou deixe o Router selecionar automaticamente para cada prompt.</p><div class="agent-grid" id="agentGrid"></div></div>
+  </dialog>
+  <dialog id="promptsDialog">
+    <div class="dialog-head"><h2>Biblioteca de prompts</h2><button class="dialog-close" data-close="promptsDialog">×</button></div>
+    <div class="dialog-body"><div class="prompt-list" id="promptList"></div></div>
+  </dialog>
+  <dialog id="tasksDialog">
+    <div class="dialog-head"><h2>Tarefas programadas</h2><button class="dialog-close" data-close="tasksDialog">×</button></div>
+    <div class="dialog-body"><form class="form-grid" id="taskForm"><label>Prompt da tarefa<input id="taskPrompt" required placeholder="Ex.: revise minhas prioridades da semana"></label><label>Executar em<input id="taskAt" required type="datetime-local"></label><label>Agente<select id="taskAgent"></select></label><button class="dialog-submit">Agendar tarefa</button></form><div class="task-list" id="taskList"></div></div>
+  </dialog>
+  <dialog id="githubDialog">
+    <div class="dialog-head"><h2>GitHub conectado</h2><button class="dialog-close" data-close="githubDialog">×</button></div>
+    <div class="dialog-body"><p class="settings-intro">Use um token GitHub somente com permissões mínimas. Ele fica salvo apenas neste navegador.</p><form class="form-grid" id="githubForm"><label>Token pessoal<input id="githubToken" type="password" placeholder="ghp_..."></label><label>Usuário ou organização<input id="githubOwner" required placeholder="octocat"></label><button class="dialog-submit">Carregar repositórios</button></form><div class="github-result" id="githubResult"></div></div>
+  </dialog>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const chat = $('#chat'), input = $('#userInput'), send = $('#sendBtn'), toast = $('#toast');
+    const apiKey = $('#apiKey'), reasoningModel = $('#reasoningModel'), visionModel = $('#visionModel'), safetyModel = $('#safetyModel'), sttModel = $('#sttModel'), ttsModel = $('#ttsModel'), status = $('#keyStatus');
+    const attachmentList = $('#attachmentList'), fileInput = $('#fileInput');
+    let history = [], sending = false, controller = null;
+    let attachments = [];
+    const usage = JSON.parse(localStorage.getItem('orbit_usage') || '{"requests":0,"tokens":0,"remainingTokens":null}');
+    const visionCandidates = ['qwen/qwen3.8-27b', 'meta-llama/llama-4-maverick-17b-128e-instruct', 'meta-llama/llama-4-scout-17b-16e-instruct'];
+    const agents = [
+      ['Architect','Código e engenharia','arquitetura, sistema, tecnologia, projeto','Recomende uma arquitetura clara. Compare no máximo três opções e declare uma recomendação.'],
+      ['Code Surgeon','Código e engenharia','implemente, corrigir código, refatorar, função','Faça uma alteração cirúrgica, preserve comportamento e entregue código pronto.'],
+      ['Debugger','Código e engenharia','erro, bug, falha, exception, não funciona','Encontre a causa raiz, ordene hipóteses e proponha a correção mínima.'],
+      ['Code Reviewer','Código e engenharia','revisar código, review, vulnerabilidade','Revise priorizando segurança, corretude e performance. Liste problemas concretos com severidade.'],
+      ['Test Writer','Código e engenharia','teste, testes, cobertura','Escreva testes de comportamento incluindo casos felizes, erros e limites.'],
+      ['Deep Analyst','Análise e raciocínio','analisar, investigação, explique, comparação','Entregue resumo executivo, pontos-chave, insights não óbvios, riscos e conclusão.'],
+      ['Decision Maker','Análise e raciocínio','decidir, decisão, escolher, alternativas','Compare opções, defina critérios, recomende uma escolha e indique confiança.'],
+      ["Devil's Advocate",'Análise e raciocínio','riscos, critique, pontos fracos, contra','Ataque a ideia com os riscos de maior impacto e termine pelo maior risco.'],
+      ['First Principles','Análise e raciocínio','do zero, princípios, fundamento','Quebre o problema em fatos básicos e reconstrua uma solução simples.'],
+      ['Copywriter','Escrita e comunicação','marketing, anúncio, slogan, vendas','Escreva texto persuasivo, claro e adequado ao público informado.'],
+      ['Summarizer Ultra','Escrita e comunicação','resuma, resumo, síntese','Resuma preservando decisões, números, prazos e pontos acionáveis.'],
+      ['Technical Writer','Escrita e comunicação','documentação, manual, documentação técnica','Produza documentação objetiva com pré-requisitos, passos e exemplos.'],
+      ['Extractor','Dados e extração','extrair, campos, dados estruturados','Extraia os dados e responda em JSON válido, sem texto extra.'],
+      ['Classifier','Dados e extração','classificar, categoria, rotular','Classifique o conteúdo e explique brevemente o critério usado.'],
+      ['Meeting Notes','Produtividade e negócios','reunião, ata, decisões, participantes','Converta o conteúdo em resumo, decisões, responsáveis e próximos passos.'],
+      ['Prioritizer','Produtividade e negócios','prioridade, tarefas, backlog, semana','Ordene por impacto e esforço e proponha uma sequência executável.'],
+      ['Strategy Advisor','Produtividade e negócios','estratégia, negócio, mercado, plano','Proponha estratégia com objetivo, riscos, métricas e próximos passos.'],
+      ['Idea Machine','Criatividade','ideias, brainstorm, criatividade','Gere ideias variadas, específicas e aplicáveis, evitando clichês.'],
+      ['Name & Brand','Criatividade','nome, marca, naming, identidade','Crie nomes memoráveis e justifique posicionamento e disponibilidade a validar.'],
+      ['ELI5 Teacher','Educação','explique simples, criança, iniciante','Explique com linguagem simples, analogias e exemplos, sem perder precisão.'],
+      ['Socratic Tutor','Educação','aprender, estudar, exercício, professor','Ensine por perguntas graduais e revele a resposta somente quando necessário.'],
+      ['Prompt Guard','Segurança e qualidade','jailbreak, perigoso, segredo, bypass','Analise riscos e bloqueie instruções perigosas, mantendo uma alternativa segura.'],
+      ['Hallucination Checker','Segurança e qualidade','verifique, fontes, fato, certeza','Separe fatos de suposições, indique incertezas e peça fontes quando necessário.'],
+      ['Consistency Agent','Segurança e qualidade','consistência, conflito, contradiz','Cheque contradições internas e proponha uma versão consistente.'],
+      ['Compressor','Meta gateway','compactar histórico, reduzir contexto','Comprima o contexto preservando requisitos, decisões, pendências e fatos.'],
+      ['Follow-up Generator','Meta gateway','próximos passos, perguntas, continuar','Gere perguntas de acompanhamento e próximos passos úteis.']
+    ].map(([name, category, keywords, instruction]) => ({ name, category, keywords, instruction }));
+    let selectedAgent = 'Auto (Router)';
+    let scheduledTasks = JSON.parse(localStorage.getItem('orbit_tasks') || '[]');
+    let recorder = null, recordingChunks = [];
+
+    const savedKey = localStorage.getItem('groq_api_key');
+    if (savedKey) { apiKey.value = savedKey; setKeyStatus(true); }
+    function setKeyStatus(connected) {
+      status.classList.toggle('connected', connected);
+      status.querySelector('span').textContent = connected ? 'Chave configurada' : 'Chave não configurada';
+    }
+    function showToast(message) {
+      toast.textContent = message; toast.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+    function formatNumber(value) { return Number(value || 0).toLocaleString('pt-BR'); }
+    function updateUsage() {
+      const percent = usage.remainingTokens === null ? 0 : Math.min(100, Math.max(0, 100 - ((usage.remainingTokens / Math.max(usage.tokenLimit || 1, 1)) * 100)));
+      $('#usagePercent').textContent = `${Math.round(percent)}%`;
+      $('#usageProgress').style.width = `${Math.max(percent, usage.requests ? 4 : 0)}%`;
+      $('#usageSummary').textContent = `${formatNumber(usage.requests)} mensagens · ${formatNumber(usage.tokens)} tokens estimados`;
+      $('#sessionUsage').textContent = `${formatNumber(usage.requests)} mensagens · ${formatNumber(usage.tokens)} tokens`;
+      if (usage.remainingTokens !== null) $('#rateUsage').textContent = `${formatNumber(usage.remainingTokens)} tokens restantes · reseta ${usage.resetTokens || 'em breve'}`;
+    }
+    function readRateLimitHeaders(response) {
+      const remaining = response.headers.get('x-ratelimit-remaining-tokens');
+      if (!remaining) return;
+      usage.remainingTokens = Number(remaining);
+      usage.tokenLimit = Number(response.headers.get('x-ratelimit-limit-tokens') || usage.tokenLimit || remaining);
+      usage.resetTokens = response.headers.get('x-ratelimit-reset-tokens') || 'em breve';
+      updateUsage();
+    }
+    function estimateTokens(text) { return Math.max(1, Math.ceil(text.length / 4)); }
+    function chooseAgent(text) {
+      if (selectedAgent !== 'Auto (Router)') return agents.find((agent) => agent.name === selectedAgent) || agents[5];
+      const normalized = text.toLowerCase();
+      const scored = agents.map((agent) => ({ agent, score: agent.keywords.split(', ').reduce((score, keyword) => score + (normalized.includes(keyword) ? 2 : 0), 0) })).sort((a, b) => b.score - a.score);
+      return scored[0].score ? scored[0].agent : agents[5];
+    }
+    function agentSystemPrompt(agent) { return `Você é o agente ${agent.name}, da categoria ${agent.category}. ${agent.instruction} Responda em português brasileiro, seja direto e não invente dados.`; }
+    function renderMarkdown(source) {
+      const escaped = escapeText(source);
+      const blocks = escaped.split(/\n{2,}/).map((block) => {
+        const lines = block.split('\n');
+        if (lines.every((line) => /^[-*] /.test(line))) return `<ul>${lines.map((line) => `<li>${line.replace(/^[-*] /, '')}</li>`).join('')}</ul>`;
+        if (lines.every((line) => /^\d+\. /.test(line))) return `<ol>${lines.map((line) => `<li>${line.replace(/^\d+\. /, '')}</li>`).join('')}</ol>`;
+        if (/^### /.test(block)) return `<h4>${block.replace(/^### /, '')}</h4>`;
+        if (/^## /.test(block)) return `<h3>${block.replace(/^## /, '')}</h3>`;
+        if (/^> /.test(block)) return `<blockquote>${block.replace(/^> /gm, '')}</blockquote>`;
+        if (/^```/.test(block)) return `<pre><code>${block.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '')}</code></pre>`;
+        return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+      }).join('');
+      return blocks
+        .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+        .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+        .replace(/_([^_\n]+)_/g, '<em>$1</em>');
+    }
+    async function selectVisionModel(key) {
+      const current = visionModel.value;
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: `Bearer ${key}` } });
+        if (response.ok) {
+          const available = (await response.json()).data?.map((item) => item.id) || [];
+          const found = visionCandidates.find((candidate) => available.includes(candidate));
+          if (found) {
+            visionModel.value = found;
+            return found;
+          }
+        }
+      } catch (error) {
+        console.warn('Não foi possível consultar os modelos disponíveis.', error);
+      }
+      if (visionCandidates.includes(current)) return current;
+      throw new Error('Sua chave Groq não possui um modelo de visão disponível. Consulte os modelos liberados em https://console.groq.com/docs/models.');
+    }
+    function chatModel() { return attachments.some((file) => file.type.startsWith('image/')) ? visionModel.value : reasoningModel.value; }
+    async function runSafetyCheck(key, text) {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model: safetyModel.value, messages: [{ role: 'system', content: 'Classifique a mensagem. Responda somente SAFE ou BLOCK. Use BLOCK apenas para conteúdo claramente perigoso, ilegal ou de abuso.' }, { role: 'user', content: text }], temperature: 0, max_completion_tokens: 8 })
+      });
+      if (!response.ok) return true;
+      const data = await response.json();
+      return !String(data.choices?.[0]?.message?.content || '').toUpperCase().includes('BLOCK');
+    }
+    function escapeText(text) { return String(text).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char])); }
+    function renderAttachments() {
+      attachmentList.innerHTML = attachments.map((file, index) => file.type.startsWith('image/')
+        ? `<div class="attachment"><img src="${file.url}" alt="${escapeText(file.name)}"><button type="button" data-remove-attachment="${index}" aria-label="Remover imagem">×</button></div>`
+        : `<div class="attachment-name">📎 ${escapeText(file.name)} <button type="button" data-remove-attachment="${index}" aria-label="Remover arquivo">×</button></div>`).join('');
+    }
+    function addMessage(role, text = '', images = []) {
+      $('#welcome')?.remove(); $('#suggestions')?.remove();
+      const wrapper = document.createElement('article');
+      wrapper.className = `message ${role}`;
+      const imageMarkup = images.length ? `<div class="bubble-images">${images.map((image) => `<img src="${image}" alt="Imagem anexada">`).join('')}</div>` : '';
+      const formattedText = role === 'assistant' ? renderMarkdown(text) : escapeText(text);
+      wrapper.innerHTML = `<div class="message-avatar">${role === 'user' ? 'AS' : '✦'}</div><div class="message-body"><div class="message-meta"><strong>${role === 'user' ? 'Você' : 'Orbit AI'}</strong><span>${role === 'user' ? 'agora' : 'resposta'}</span></div><div class="bubble">${imageMarkup}${formattedText}</div>${role === 'assistant' ? '<div class="message-actions"><button data-copy>Copiar</button><button data-speak>Ouvir</button><button data-regenerate>Regenerar</button></div>' : ''}</div>`;
+      chat.appendChild(wrapper); chat.scrollTop = chat.scrollHeight;
+      return wrapper.querySelector('.bubble');
+    }
+    function clearConversation() {
+      history = []; attachments = []; renderAttachments(); chat.innerHTML = `<div class="welcome" id="welcome"><span class="eyebrow"><i></i> Assistente pessoal</span><h1>O que vamos criar hoje?</h1><p>Transforme ideias em planos, textos e decisões. Estou pronto para ajudar você a avançar.</p></div><div class="suggestions" id="suggestions">${document.querySelector('.suggestions')?.innerHTML || '<button class="suggestion" data-prompt="Organize minha semana em um plano prático."><b>◫</b><strong>Organizar minha semana</strong><span>Prioridades e foco</span></button>'}</div>`; bindSuggestions(); $('#conversationTitle').textContent = 'Nova conversa'; showToast('Nova conversa criada'); }
+    function bindSuggestions() { document.querySelectorAll('.suggestion').forEach((button) => button.addEventListener('click', () => { input.value = button.dataset.prompt; input.focus(); resizeInput(); })); }
+    function apiMessages() {
+      return history.map((message) => {
+        if (typeof message.content === 'string') return message;
+        const text = message.content.filter((part) => part.type === 'text').map((part) => part.text).join('\n');
+        return { role: message.role, content: text || '[Imagem anexada anteriormente]' };
+      });
+    }
+    async function sendMessage() {
+      const text = input.value.trim(); if (sending) { controller?.abort(); return; }
+      if (!text && !attachments.length) return;
+      const key = apiKey.value.trim() || localStorage.getItem('groq_api_key');
+      if (!key) { showToast('Configure sua chave Groq nas configurações'); apiKey.focus(); return; }
+      if (!(await runSafetyCheck(key, text || 'Analise as imagens anexadas.'))) {
+        showToast('A mensagem foi bloqueada pelo modelo de segurança');
+        return;
+      }
+      sending = true; send.disabled = false; send.textContent = '■'; send.title = 'Interromper geração'; input.value = ''; resizeInput();
+      const imageUrls = attachments.filter((file) => file.type.startsWith('image/')).map((file) => file.url);
+      if (imageUrls.length) {
+        try {
+          await selectVisionModel(key);
+        } catch (error) {
+          attachments = imageUrls.map((url, index) => ({ name: `imagem-${index + 1}`, type: 'image/*', url }));
+          renderAttachments();
+          sending = false;
+          send.disabled = false;
+          send.textContent = '➤';
+          send.title = 'Enviar';
+          showToast(error.message);
+          return;
+        }
+      }
+      const content = imageUrls.length
+        ? [{ type: 'text', text: text || 'Analise as imagens anexadas.' }, ...imageUrls.map((url) => ({ type: 'image_url', image_url: { url } }))]
+        : text;
+      const requestModel = imageUrls.length ? visionModel.value : reasoningModel.value;
+      const activeAgent = chooseAgent(text || 'analise a imagem');
+      addMessage('user', text || 'Analise as imagens anexadas.', imageUrls); history.push({ role: 'user', content });
+      attachments = []; renderAttachments();
+      const bubble = addMessage('assistant'); bubble.innerHTML = '<div class="typing"><i></i><i></i><i></i></div>';
+      let answer = ''; controller = new AbortController();
+      try {
+        const requestMessages = [{ role: 'system', content: agentSystemPrompt(activeAgent) }, ...apiMessages()];
+        const currentMessage = requestMessages.at(-1);
+        if (imageUrls.length && currentMessage?.role === 'user') {
+          currentMessage.content = content;
+        }
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` }, body: JSON.stringify({ model: requestModel, messages: requestMessages, temperature: Number($('#temperature').value), max_completion_tokens: 2048, stream: true }) });
+        readRateLimitHeaders(response);
+        if (!response.ok) { const error = await response.json().catch(() => ({})); throw new Error(error.error?.message || `Erro ${response.status}`); }
+        const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = '';
+        while (true) {
+          const part = await reader.read(); if (part.done) break; buffer += decoder.decode(part.value, { stream: true });
+          const lines = buffer.split('\n'); buffer = lines.pop() || '';
+          for (const line of lines) {
+            const data = line.trim().replace(/^data:\s*/, ''); if (!data || data === '[DONE]') continue;
+            try { const content = JSON.parse(data).choices?.[0]?.delta?.content; if (content) { answer += content; bubble.textContent = answer; chat.scrollTop = chat.scrollHeight; } } catch (error) { /* fragmento incompleto */ }
+          }
+        }
+        if (!answer) bubble.textContent = 'Não recebi conteúdo nessa resposta.';
+        else {
+          bubble.innerHTML = renderMarkdown(answer);
+          history.push({ role: 'assistant', content: answer });
+          usage.requests += 1;
+          usage.tokens += estimateTokens(text) + estimateTokens(answer);
+          localStorage.setItem('orbit_usage', JSON.stringify(usage));
+          updateUsage();
+        }
+      } catch (error) {
+        bubble.textContent = error.name === 'AbortError' ? 'Geração interrompida.' : 'Não foi possível gerar a resposta.';
+        if (error.name !== 'AbortError') showToast(error.message);
+      } finally { sending = false; send.disabled = false; send.textContent = '➤'; send.title = 'Enviar'; controller = null; input.focus(); }
+    }
+    function resizeInput() { input.style.height = 'auto'; input.style.height = `${Math.min(input.scrollHeight, 130)}px`; }
+    async function toggleRecording() {
+      if (recorder?.state === 'recording') {
+        recorder.stop();
+        $('#micBtn').innerHTML = '◉ <span>Voz</span>';
+        return;
+      }
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return showToast('Seu navegador não permite gravação de voz');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream); recordingChunks = [];
+        recorder.ondataavailable = (event) => { if (event.data.size) recordingChunks.push(event.data); };
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const blob = new Blob(recordingChunks, { type: recorder.mimeType || 'audio/webm' });
+          const key = apiKey.value.trim() || localStorage.getItem('groq_api_key');
+          if (!key) return showToast('Configure sua chave Groq antes de usar voz');
+          const form = new FormData(); form.append('file', blob, 'gravacao.webm'); form.append('model', sttModel.value); form.append('language', 'pt');
+          try {
+            const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form });
+            if (!response.ok) throw new Error('Não foi possível transcrever o áudio');
+            const data = await response.json(); input.value = `${input.value}${input.value ? ' ' : ''}${data.text || ''}`; resizeInput(); input.focus(); showToast('Áudio transcrito');
+          } catch (error) { showToast(error.message); }
+        };
+        recorder.start(); $('#micBtn').innerHTML = '■ <span>Parar</span>'; showToast('Gravando… fale agora');
+      } catch (error) { showToast('Permissão de microfone recusada'); }
+    }
+    async function speakMessage(button) {
+      const key = apiKey.value.trim() || localStorage.getItem('groq_api_key');
+      if (!key) return showToast('Configure sua chave Groq antes de usar voz');
+      const text = button.closest('.message-body').querySelector('.bubble').textContent.trim();
+      button.disabled = true; button.textContent = 'Carregando…';
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/audio/speech', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: ttsModel.value, input: text, voice: ttsModel.value.includes('arabic') ? 'aisha' : 'autumn', response_format: 'wav' }) });
+        if (!response.ok) throw new Error('Não foi possível gerar o áudio');
+        const audio = new Audio(URL.createObjectURL(await response.blob())); audio.onended = () => URL.revokeObjectURL(audio.src); await audio.play();
+      } catch (error) { showToast(error.message); } finally { button.disabled = false; button.textContent = 'Ouvir'; }
+    }
+    $('#saveKey').addEventListener('click', () => { const key = apiKey.value.trim(); if (!key) return showToast('Cole uma chave válida'); localStorage.setItem('groq_api_key', key); setKeyStatus(true); showToast('Chave salva neste dispositivo'); });
+    $('#newChat').addEventListener('click', clearConversation);
+    send.addEventListener('click', sendMessage);
+    input.addEventListener('input', resizeInput);
+    input.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
+    $('#temperature').addEventListener('input', (event) => { $('#temperatureValue').textContent = event.target.value; });
+    $('#attachBtn').addEventListener('click', () => fileInput.click());
+    fileInput.accept = 'image/*';
+    fileInput.addEventListener('change', (event) => {
+      const files = [...event.target.files];
+      files.forEach((file) => {
+        if (!file.type.startsWith('image/')) return showToast(`${file.name}: apenas imagens são suportadas`);
+        if (file.size > 10 * 1024 * 1024) return showToast(`${file.name} excede 10 MB`);
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            attachments.push({ name: file.name, type: file.type, url: reader.result });
+            renderAttachments();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      fileInput.value = '';
+    });
+    attachmentList.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-remove-attachment]');
+      if (!button) return;
+      attachments.splice(Number(button.dataset.removeAttachment), 1); renderAttachments();
+    });
+    $('#micBtn').addEventListener('click', toggleRecording);
+    $('#memoryToggle').addEventListener('click', (event) => { event.currentTarget.classList.toggle('on'); showToast(event.currentTarget.classList.contains('on') ? 'Memória ativada' : 'Memória desativada'); });
+    $('#themeBtn').addEventListener('click', () => { document.body.classList.toggle('dark'); $('#themeBtn').textContent = document.body.classList.contains('dark') ? '☀' : '☾'; localStorage.setItem('orbit_dark', document.body.classList.contains('dark')); });
+    if (localStorage.getItem('orbit_dark') === 'true') { document.body.classList.add('dark'); $('#themeBtn').textContent = '☀'; }
+    $('#exportBtn').addEventListener('click', () => { if (!history.length) return showToast('Ainda não há mensagens para exportar'); const file = new Blob([history.map((item) => `${item.role === 'user' ? 'Você' : 'Orbit AI'}:\n${item.content}`).join('\n\n')], { type: 'text/plain;charset=utf-8' }); const link = document.createElement('a'); link.href = URL.createObjectURL(file); link.download = 'conversa-orbit.txt'; link.click(); URL.revokeObjectURL(link.href); showToast('Conversa exportada'); });
+    chat.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-copy]');
+      if (button) { navigator.clipboard.writeText(button.closest('.message-body').querySelector('.bubble').textContent); showToast('Resposta copiada'); }
+      const speak = event.target.closest('[data-speak]');
+      if (speak) speakMessage(speak);
+      if (event.target.closest('[data-regenerate]') && history.length) { const previous = history.at(-2); input.value = typeof previous?.content === 'string' ? previous.content : ''; sendMessage(); }
+    });
+    function openDialog(id) { const dialog = $(`#${id}`); if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', ''); }
+    document.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => $(`#${button.dataset.close}`).close()));
+    $('#agentsBtn').addEventListener('click', () => openDialog('agentsDialog'));
+    $('#openPrompts').addEventListener('click', () => openDialog('promptsDialog'));
+    $('#tasksBtn').addEventListener('click', () => openDialog('tasksDialog'));
+    $('#openTasks').addEventListener('click', () => openDialog('tasksDialog'));
+    $('#githubBtn').addEventListener('click', () => openDialog('githubDialog'));
+    const agentGrid = $('#agentGrid'), promptList = $('#promptList'), taskAgent = $('#taskAgent');
+    agentGrid.innerHTML = `<button class="agent-card ${selectedAgent === 'Auto (Router)' ? 'active' : ''}" data-agent="Auto (Router)"><strong>Auto (Router)</strong><small>Escolhe o agente pelo conteúdo do prompt</small></button>` + agents.map((agent) => `<button class="agent-card" data-agent="${escapeText(agent.name)}"><strong>${escapeText(agent.name)}</strong><small>${escapeText(agent.category)}</small></button>`).join('');
+    taskAgent.innerHTML = `<option>Auto (Router)</option>${agents.map((agent) => `<option>${escapeText(agent.name)}</option>`).join('')}`;
+    const presets = [
+      ['Revisar código', 'Revise o código abaixo como um Code Reviewer. Liste riscos, bugs e melhorias priorizados:\n\n'],
+      ['Planejar semana', 'Organize minhas tarefas da semana por impacto, esforço e prazo. Gere um plano executável.'],
+      ['Analisar decisão', 'Analise esta decisão, compare as opções, riscos, critérios e recomende uma escolha:\n\n'],
+      ['Resumir reunião', 'Transforme estas anotações em decisões, responsáveis, prazos e próximos passos:\n\n'],
+      ['Criar ideias', 'Gere 10 ideias originais, práticas e diferentes para:\n\n'],
+      ['Explicar como iniciante', 'Explique de forma simples, usando analogias e exemplos:\n\n'],
+      ['Criar testes', 'Escreva testes de comportamento para este código, incluindo erros e limites:\n\n'],
+      ['Extrair para JSON', 'Extraia os dados abaixo em JSON válido, sem texto extra:\n\n']
+    ];
+    promptList.innerHTML = presets.map(([label, prompt]) => `<button class="prompt-preset" data-prompt="${encodeURIComponent(prompt)}"><strong>${label}</strong><br><span>${escapeText(prompt.slice(0, 76))}…</span></button>`).join('');
+    agentGrid.addEventListener('click', (event) => { const card = event.target.closest('[data-agent]'); if (!card) return; selectedAgent = card.dataset.agent; agentGrid.querySelectorAll('.agent-card').forEach((item) => item.classList.toggle('active', item === card)); showToast(`Agente selecionado: ${selectedAgent}`); });
+    promptList.addEventListener('click', (event) => { const preset = event.target.closest('[data-prompt]'); if (!preset) return; input.value = decodeURIComponent(preset.dataset.prompt); resizeInput(); $('#promptsDialog').close(); input.focus(); });
+    function renderTasks() {
+      $('#taskList').innerHTML = scheduledTasks.length ? scheduledTasks.map((task) => `<div class="task-item"><div><strong>${escapeText(task.prompt)}</strong><small>${new Date(task.at).toLocaleString('pt-BR')} · ${escapeText(task.agent)}</small></div><button data-remove-task="${task.id}">remover</button></div>`).join('') : '<small style="color:var(--muted)">Nenhuma tarefa agendada.</small>';
+    }
+    $('#taskForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const task = { id: crypto.randomUUID(), prompt: $('#taskPrompt').value.trim(), at: new Date($('#taskAt').value).toISOString(), agent: taskAgent.value };
+      scheduledTasks.push(task); localStorage.setItem('orbit_tasks', JSON.stringify(scheduledTasks)); renderTasks(); event.target.reset(); showToast('Tarefa programada'); 
+    });
+    $('#taskList').addEventListener('click', (event) => { const button = event.target.closest('[data-remove-task]'); if (!button) return; scheduledTasks = scheduledTasks.filter((task) => task.id !== button.dataset.removeTask); localStorage.setItem('orbit_tasks', JSON.stringify(scheduledTasks)); renderTasks(); });
+    setInterval(() => {
+      const now = Date.now();
+      scheduledTasks.filter((task) => new Date(task.at).getTime() <= now).forEach((task) => {
+        selectedAgent = task.agent; input.value = task.prompt; scheduledTasks = scheduledTasks.filter((item) => item.id !== task.id); localStorage.setItem('orbit_tasks', JSON.stringify(scheduledTasks)); sendMessage(); showToast(`Executando: ${task.prompt}`);
+      });
+      renderTasks();
+    }, 15000);
+    $('#githubToken').value = localStorage.getItem('github_token') || '';
+    $('#githubOwner').value = localStorage.getItem('github_owner') || '';
+    $('#githubForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = $('#githubToken').value.trim(), owner = $('#githubOwner').value.trim();
+      if (!token || !owner) return showToast('Informe token e usuário/organização');
+      localStorage.setItem('github_token', token); localStorage.setItem('github_owner', owner);
+      const result = $('#githubResult'); result.innerHTML = '<small>Carregando repositórios…</small>';
+      try {
+        const response = await fetch(`https://api.github.com/users/${encodeURIComponent(owner)}/repos?sort=updated&per_page=10`, { headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}` } });
+        if (!response.ok) throw new Error('GitHub recusou o token ou usuário');
+        const repos = await response.json();
+        result.innerHTML = repos.map((repo) => `<div class="github-item"><div><strong>${escapeText(repo.full_name)}</strong><small>${escapeText(repo.description || 'Sem descrição')}</small></div><a href="${repo.html_url}" target="_blank" rel="noopener">abrir</a></div>`).join('') || '<small>Nenhum repositório encontrado.</small>';
+      } catch (error) { result.innerHTML = `<small style="color:#dc5d6e">${escapeText(error.message)}</small>`; }
+    });
+    const views = ['dashboard', 'prompts', 'agents', 'tasks', 'integrations', 'files', 'settings'];
+    function showView(view) {
+      const isChat = view === 'chat';
+      document.querySelector('.main').style.display = '';
+      $('#welcome').style.display = isChat ? '' : 'none';
+      $('#suggestions').style.display = isChat ? '' : 'none';
+      $('.composer-wrap').style.display = isChat ? '' : 'none';
+      views.forEach((name) => document.querySelector(`#${name}View`).classList.toggle('active', name === view));
+      document.querySelectorAll('.nav-item[data-view]').forEach((item) => item.classList.toggle('active', item.dataset.view === view));
+      if (view === 'dashboard') {
+        $('#dashMessages').textContent = formatNumber(usage.requests);
+        $('#dashTokens').textContent = formatNumber(usage.tokens);
+        $('#dashTasks').textContent = formatNumber(scheduledTasks.length);
+      }
+      if (view === 'tasks') renderTasksPage();
+    }
+    document.querySelectorAll('.nav-item[data-view]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+    document.querySelectorAll('[data-view-open]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.viewOpen)));
+    $('#openTasksPage').addEventListener('click', () => openDialog('tasksDialog'));
+    $('#openGithubPage').addEventListener('click', () => openDialog('githubDialog'));
+    $('#webhookInfo').addEventListener('click', () => showToast('Webhooks entram na próxima versão'));
+    $('#uploadPageFile').addEventListener('click', () => { showView('chat'); fileInput.click(); });
+    $('#saveAllSettings').addEventListener('click', () => showToast('Preferências salvas neste dispositivo'));
+    $('#themePreference').addEventListener('change', (event) => { document.body.classList.toggle('dark', event.target.value === 'dark'); localStorage.setItem('orbit_dark', event.target.value === 'dark'); });
+    $('#motionToggle').addEventListener('click', (event) => { event.currentTarget.classList.toggle('on'); document.body.classList.toggle('reduced-motion', !event.currentTarget.classList.contains('on')); });
+    $('#clearLocalData').addEventListener('click', () => { if (!confirm('Limpar chave, tarefas, consumo e preferências locais?')) return; localStorage.clear(); location.reload(); });
+    function renderTasksPage() {
+      const target = $('#tasksPageList');
+      target.innerHTML = scheduledTasks.length ? scheduledTasks.map((task) => `<div class="task-item"><div><strong>${escapeText(task.prompt)}</strong><small>${new Date(task.at).toLocaleString('pt-BR')} · ${escapeText(task.agent)}</small></div><button data-remove-task="${task.id}">remover</button></div>`).join('') : '<small style="color:var(--muted)">Nenhuma tarefa agendada.</small>';
+    }
+    $('#tasksPageList').addEventListener('click', (event) => { const button = event.target.closest('[data-remove-task]'); if (!button) return; scheduledTasks = scheduledTasks.filter((task) => task.id !== button.dataset.removeTask); localStorage.setItem('orbit_tasks', JSON.stringify(scheduledTasks)); renderTasksPage(); });
+    $('#promptLibrary').innerHTML = presets.map(([label, prompt], index) => `<article class="library-card"><h3>${escapeText(label)}</h3><p>${escapeText(prompt.replace(/\n/g, ' ').slice(0, 115))}…</p><button data-prompt-shortcut="${encodeURIComponent(prompt)}">Usar este prompt ↗</button></article>`).join('');
+    $('#agentOverview').innerHTML = agents.map((agent) => `<article class="agent-overview-card"><h3>${escapeText(agent.name)}</h3><p>${escapeText(agent.category)}<br>${escapeText(agent.instruction)}</p><button class="outline-action" data-agent-page="${escapeText(agent.name)}">Selecionar agente</button></article>`).join('');
+    $('#agentOverview').addEventListener('click', (event) => { const button = event.target.closest('[data-agent-page]'); if (!button) return; selectedAgent = button.dataset.agentPage; showView('chat'); showToast(`Agente selecionado: ${selectedAgent}`); });
+    document.querySelectorAll('[data-prompt-shortcut]').forEach((button) => button.addEventListener('click', () => { input.value = decodeURIComponent(button.dataset.promptShortcut); resizeInput(); showView('chat'); input.focus(); }));
+    if (localStorage.getItem('orbit_dark') === 'true') $('#themePreference').value = 'dark';
+    renderTasks();
+    renderTasksPage();
+    document.querySelectorAll('.conversation').forEach((item) => item.addEventListener('click', () => { document.querySelectorAll('.conversation').forEach((conversation) => conversation.classList.remove('active')); item.classList.add('active'); $('#conversationTitle').textContent = item.querySelector('span').textContent; showToast('Conversa selecionada'); }));
+    updateUsage();
+    bindSuggestions(); input.focus();
+    if (window.gsap) {
+      gsap.from('.sidebar', { x: -18, opacity: 0, duration: .65, ease: 'power3.out' });
+      gsap.from('.topbar', { y: -12, opacity: 0, duration: .55, delay: .08, ease: 'power3.out' });
+      gsap.from('.welcome > *, .suggestion', { y: 18, opacity: 0, duration: .65, stagger: .07, delay: .15, ease: 'power3.out' });
+      gsap.from('.settings', { x: 18, opacity: 0, duration: .65, delay: .12, ease: 'power3.out' });
+      document.querySelectorAll('.suggestion, .feature-action, .top-button').forEach((element) => {
+        element.addEventListener('mouseenter', () => gsap.to(element, { y: -2, duration: .2, ease: 'power2.out' }));
+        element.addEventListener('mouseleave', () => gsap.to(element, { y: 0, duration: .2, ease: 'power2.out' }));
+      });
+    }
+  </script>
+</body>
+</html>
