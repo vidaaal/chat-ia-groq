@@ -2,25 +2,22 @@
 
 Chat de inteligência artificial simples feito em HTML + JavaScript puro, usando a API da [Groq](https://groq.com).
 
+**Modelo atual:** `openai/gpt-oss-120b`
+
 ## Como usar
 
 1. Abra o arquivo `index.html` no navegador **ou** acesse a versão online (se você ativar o GitHub Pages).
 2. Cole sua chave de API da Groq no campo no topo.
 3. Clique em **Salvar chave** (ela fica salva só no seu navegador).
-4. Escolha o modelo e comece a conversar!
+4. Comece a conversar!
+
+A resposta aparece **em tempo real** (streaming).
 
 ## Como pegar a chave da Groq
 
 1. Acesse [console.groq.com](https://console.groq.com)
 2. Crie uma conta / faça login
 3. Vá em **API Keys** e gere uma nova chave
-
-## Modelos disponíveis
-
-- Llama 3.3 70B (recomendado)
-- Llama 3.1 8B (mais rápido)
-- Gemma 2 9B
-- Mixtral 8x7B
 
 ## Observação de segurança
 
