@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBrand – Landing Page Premium</title>
+    <meta name="description" content="Landing page premium da MyBrand com design responsivo, performance otimizada e recursos avançados.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --primary:#0d6efd;
+            --primary-dark:#0a58ca;
+            --bg:#f8f9fa;
+            --text:#212529;
+            --muted:#6c757d;
+            --radius:12px;
+            --transition:.3s ease;
+            --footer-bg:#212529;
+            --footer-text:#adb5bd;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:'Inter',sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            line-height:1.6;
+        }
+        a{color:inherit;text-decoration:none;}
+        header{
+            position:fixed;top:0;left:0;width:100%;
+            padding:1rem 2rem;background:rgba(255,255,255,.9);
+            backdrop-filter:blur(8px);display:flex;justify-content:space-between;
+            align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:1000;
+        }
+        .logo{font-weight:600;font-size:1.25rem;color:var(--primary);}
+        nav ul{display:flex;gap:2rem;list-style:none;}
+        nav a{font-weight:500;transition:var(--transition);}
+        nav a:hover{color:var(--primary);}
+        .section{padding:4rem 2rem;max-width:1200px;margin:auto;}
+        .hero{
+            min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+            align-items:center;text-align:center;padding:0 2rem;
+            background:linear-gradient(135deg,#e0e7ff,#cfe2ff);
+        }
+        .hero h1{font-size:3rem;font-weight:700;margin-bottom:.5rem;}
+        .hero p{font-size:1.125rem;color:var(--muted);max-width:600px;margin-bottom:2rem;}
+        .cta-btn{
+            padding:.85rem 2rem;background:var(--primary);color:#fff;border:none;
+            border-radius:var(--radius);font-weight:600;cursor:pointer;
+            transition:var(--transition);box-shadow:0 4px 12px rgba(13,107,253,.3);
+        }
+        .cta-btn:hover{
+            background:var(--primary-dark);transform:translateY(-2px);
+        }
+        .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2rem;}
+        .feature-card{
+            background:#fff;padding:2rem;border-radius:var(--radius);
+            box-shadow:0 2px 8px rgba(0,0,0,.07);transition:var(--transition);text-align:center;
+        }
+        .feature-card:hover{
+            transform:translateY(-4px);box-shadow:0 6px 16px rgba(0,0,0,.12);
+        }
+        .feature-card i{
+            font-size:2.5rem;color:var(--primary);margin-bottom:1rem;display:inline-block;
+        }
+        .feature-card h3{font-size:1.25rem;margin-bottom:.5rem;}
+        .testimonials{background:#fff;}
+        .testimonials .cards{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;
+        }
+        .testimonial-card{
+            background:#f8f9fa;padding:1.5rem;border-radius:var(--radius);
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+        }
+        .pricing{background:#e9ecef;}
+        .pricing .plans{
+            display:flex;flex-wrap:wrap;justify-content:center;gap:2rem;
+        }
+        .plan{
+            background:#fff;padding:2rem;border-radius:var(--radius);
+            width:280px;box-shadow:0 2px 8px rgba(0,0,0,.07);
+            text-align:center;
+        }
+        .plan h3{margin-bottom:.5rem;font-size:1.5rem;}
+        .plan .price{font-size:2rem;font-weight:700;color:var(--primary);margin:.75rem 0;}
+        .plan ul{list-style:none;margin:1rem 0;padding:0;text-align:left;}
+        .plan li{margin-bottom:.5rem;}
+        .faq{background:#fff;}
+        .faq-item{margin-bottom:1.5rem;}
+        .faq-item h4{font-weight:600;margin-bottom:.25rem;}
+        .team{background:#f8f9fa;}
+        .team .members{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;
+        }
+        .member{
+            text-align:center;
+        }
+        .member img{
+            width:120px;height:120px;border-radius:50%;object-fit:cover;margin-bottom:.75rem;
+        }
+        .blog{background:#fff;}
+        .blog .posts{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2rem;
+        }
+        .post{
+            background:#f8f9fa;padding:1.5rem;border-radius:var(--radius);
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+        }
+        .post h4{margin-bottom:.5rem;}
+        .contact form{
+            max-width:500px;margin:auto;display:flex;flex-direction:column;gap:1rem;
+        }
+        .contact input,
+        .contact textarea{
+            padding:.85rem;border:1px solid #ced4da;border-radius:var(--radius);
+            width:100%;
+        }
+        .footer{
+            background:var(--footer-bg);color:var(--footer-text);
+            text-align:center;padding:2rem 1rem;
+        }
+        .footer a{color:#fff;}
+        @media(max-width:768px){
+            header{padding:1rem;}
+            .hero h1{font-size:2.25rem;}
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">MyBrand</div>
+        <nav>
+            <ul>
+                <li><a href="#features">Recursos</a></li>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#testimonials">Depoimentos</a></li>
+                <li><a href="#pricing">Planos</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Transforme sua presença online</h1>
+        <p>Design impactante, performance otimizada e experiência de usuário incomparável. Tudo pronto para conquistar seu público.</p>
+        <button class="cta-btn" type="button">Comece agora</button>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section">
+        <h2 style="text-align:center;margin-bottom:2rem;">Principais Recursos</h2>
+        <div class="features">
+            <div class="feature-card">
+                <i>⚡</i>
+                <h3>Performance</h3>
+                <p>Carregamento ultra‑rápido com otimizações de assets e lazy‑load.</p>
+            </div>
+            <div class="feature-card">
+                <i>🎨</i>
+                <h3>Design Responsivo</h3>
+                <p>Layouts que se adaptam a qualquer tela, garantindo ótima experiência.</p>
+            </div>
+            <div class="feature-card">
+                <i>🔒</i>
+                <h3>Segurança</h3>
+                <p>Proteção contra vulnerabilidades comuns e SSL integrado.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="section testimonials">
+        <h2 style="text-align:center;margin-bottom:2rem;">O que nossos clientes dizem</h2>
+        <div class="cards">
+            <div class="testimonial-card">
+                <p>“A landing page aumentou nossa taxa de conversão em 45%!”</p>
+                <strong>- Ana Silva, CEO da StartupX</strong>
+            </div>
+            <div class="testimonial-card">
+                <p>“Design impecável e performance incrível. Recomendo!”</p>
+                <strong>- Carlos Mendes, Marketing Manager</strong>
+            </div>
+            <div class="testimonial-card">
+                <p>“Facilidade de edição e suporte rápido.”</p>
+                <strong>- Fernanda Lima, Freelancer</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section pricing">
+        <h2 style="text-align:center;margin-bottom:2rem;">Planos</h2>
+        <div class="plans">
+            <div class="plan">
+                <h3>Basic</h3>
+                <div class="price">R$ 49<span style="font-size:0.6rem;">/mês</span></div>
+                <ul>
+                    <li>Landing Page padrão</li>
+                    <li>Suporte por e‑mail</li>
+                    <li>Atualizações mensais</li>
+                </ul>
+                <button class="cta-btn">Assinar</button>
+            </div>
+            <div class="plan">
+                <h3>Pro</h3>
+                <div class="price">R$ 99<span style="font-size:0.6rem;">/mês</span></div>
+                <ul>
+                    <li>Recursos avançados</li>
+                    <li>Suporte 24/7</li>
+                    <li>Integrações API</li>
+                </ul>
+                <button class="cta-btn">Assinar</button>
+            </div>
+            <div class="plan">
+                <h3>Enterprise</h3>
+                <div class="price">Sob consulta</div>
+                <ul>
+                    <li>Customização total</li>
+                    <li>Gerente de conta dedicado</li>
+                    <li>SLA premium</li>
+                </ul>
+                <button class="cta-btn">Fale conosco</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section faq">
+        <h2 style="text-align:center;margin-bottom:2rem;">Perguntas Frequentes</h2>
+        <div class="faq-item">
+            <h4>Como funciona o período de teste?</h4>
+            <p>Oferecemos 14 dias gratuitos, sem necessidade de cartão.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Posso cancelar a assinatura?</h4>
+            <p>Sim, o cancelamento pode ser feito a qualquer momento pelo painel.</p>
+        </div>
+        <div class="faq-item">
+            <h4>Existe suporte técnico?</h4>
+            <p>Sim, suporte via chat e e‑mail nos planos Pro e Enterprise.</p>
+        </div>
+    </section>
+
+    <!-- Team -->
+    <section id="team" class="section team">
+        <h2 style="text-align:center;margin-bottom:2rem;">Nossa equipe</h2>
+        <div class="members">
+            <div class="member">
+                <img src="https://via.placeholder.com/120" alt="Foto de João">
+                <h4>João Pereira</h4>
+                <p>Founder & CEO</p>
+            </div>
+            <div class="member">
+                <img src="https://via.placeholder.com/120" alt="Foto de Maria">
+                <h4>Maria Oliveira</h4>
+                <p>Lead Designer</p>
+            </div>
+            <div class="member">
+                <img src="https://via.placeholder.com/120" alt="Foto de Lucas">
+                <h4>Lucas Santos</h4>
+                <p>Head of Development</p>
+            </div>
+            <div class="member">
+                <img src="https://via.placeholder.com/120" alt="Foto de Ana">
+                <h4>Ana Costa</h4>
+                <p>Marketing Manager</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog -->
+    <section id="blog" class="section blog">
+        <h2 style="text-align:center;margin-bottom:2rem;">Últimas do Blog</h2>
+        <div class="posts">
+            <div class="post">
+                <h4>5 dicas para melhorar a conversão da sua landing page</h4>
+                <p>Descubra estratégias comprovadas para transformar visitantes em leads.</p>
+                <a href="#">Ler mais →</a>
+            </div>
+            <div class="post">
+                <h4>Como otimizar o tempo de carregamento em 2024</h4>
+                <p>Ferramentas e técnicas para garantir velocidade máxima.</p>
+                <a href="#">Ler mais →</a>
+            </div>
+            <div class="post">
+                <h4>Design responsivo: boas práticas e tendências</h4>
+                <p>O que há de novo no design que se adapta a todos os dispositivos.</p>
+                <a href="#">Ler mais →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="section contact">
+        <h2 style="text-align:center;margin-bottom:2rem;">Fale Conosco</h2>
+        <form>
+            <input type="text" name="nome" placeholder="Seu nome" required>
+            <input type="email" name="email" placeholder="Seu e‑mail" required>
+            <textarea name="mensagem" rows="5" placeholder="Sua mensagem" required></textarea>
+            <button class="cta-btn" type="submit">Enviar</button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 MyBrand. Todos os direitos reservados.</p>
+        <p>
+            <a href="#">Política de Privacidade</a> |
+            <a href="#">Termos de Uso</a>
+        </p>
+    </footer>
+
+</body>
+</html>

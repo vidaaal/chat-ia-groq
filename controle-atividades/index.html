@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle Pessoal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .drawer { transform: translateX(100%); transition: transform .22s ease; }
+    .drawer.open { transform: translateX(0); }
+    .drawer-backdrop { opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+    .task-row { transition: background .12s; }
+    .task-row:hover { background: rgba(0,0,0,.028); }
+    .dark .task-row:hover { background: rgba(255,255,255,.04); }
+    .task-row.active { background: rgba(37,99,235,.06); }
+    .dark .task-row.active { background: rgba(37,99,235,.12); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
+    .dark ::-webkit-scrollbar-thumb { background: #404040; }
+    .kanban-card { cursor: grab; }
+    .kanban-card:active { cursor: grabbing; }
+    .nav-item.active { background: rgba(0,0,0,.05); font-weight: 500; }
+    .dark .nav-item.active { background: rgba(255,255,255,.06); }
+    .cal-day { min-height: 88px; }
+    .cal-day.has-tasks { cursor: pointer; }
+    .cal-day.today { outline: 2px solid #2563eb; outline-offset: -2px; }
+    .cal-day.other-month { opacity: .4; }
+    .view-btn.active { background: #f5f5f5; font-weight: 500; }
+    .dark .view-btn.active { background: #262626; }
+  </style>
+</head>
+<body class="bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 min-h-screen antialiased">
+  <div id="app" class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-56 shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col">
+      <div class="px-4 py-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">R</div>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm truncate">Controle Pessoal</p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">Rafael</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+        <button data-nav="all" class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <i class="fas fa-inbox w-4 text-neutral-400 text-xs"></i>
+          <span class="flex-1">Todas</span>
+          <span id="navCountAll" class="text-xs text-neutral-400 tabular-nums"></span>
+        </button>
+        <button data-nav="pendentes" class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <span class="w-4 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span></span>
+          <span class="flex-1">Pendentes</span>
+          <span id="navCountPend" class="text-xs text-neutral-400 tabular-nums"></span>
+        </button>
+        <button data-nav="andamento" class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <span class="w-4 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span></span>
+          <span class="flex-1">Em andamento</span>
+          <span id="navCountAnd" class="text-xs text-neutral-400 tabular-nums"></span>
+        </button>
+        <button data-nav="aguardando" class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <span class="w-4 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span></span>
+          <span class="flex-1">Aguardando entrega</span>
+          <span id="navCountAguard" class="text-xs text-neutral-400 tabular-nums"></span>
+        </button>
+        <button data-nav="concluidas" class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <span class="w-4 flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span></span>
+          <span class="flex-1">Concluídas</span>
+          <span id="navCountConc" class="text-xs text-neutral-400 tabular-nums"></span>
+        </button>
+
+        <div class="pt-5 pb-1.5 px-2.5 flex items-center justify-between">
+          <span class="text-[11px] font-medium uppercase tracking-wider text-neutral-400">Projetos</span>
+          <button id="btnNewProject" class="text-neutral-400 hover:text-blue-600 text-xs p-0.5" title="Novo projeto"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="projectList" class="space-y-0.5"></div>
+      </nav>
+
+      <div class="p-2 border-t border-neutral-200 dark:border-neutral-800 space-y-0.5">
+        <button id="btnReports" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <i class="fas fa-chart-bar w-4 text-xs"></i> Relatórios
+        </button>
+        <button id="btnExport" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <i class="fas fa-download w-4 text-xs"></i> Exportar
+        </button>
+        <button id="btnImport" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <i class="fas fa-upload w-4 text-xs"></i> Importar
+        </button>
+        <input type="file" id="importFile" accept=".json" class="hidden" />
+        <button id="btnTheme" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <i class="fas fa-moon w-4 text-xs" id="themeIcon"></i> <span id="themeLabel">Escuro</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <header class="h-14 shrink-0 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-5 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <h1 id="pageTitle" class="font-semibold text-[15px] truncate">Todas as atividades</h1>
+          <p id="pageSubtitle" class="text-xs text-neutral-500 dark:text-neutral-400 truncate">Organize e acompanhe suas entregas</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="hidden sm:flex rounded-md border border-neutral-200 dark:border-neutral-700 overflow-hidden text-xs">
+            <button id="viewList" class="view-btn px-2.5 py-1.5 active">Lista</button>
+            <button id="viewKanban" class="view-btn px-2.5 py-1.5 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800">Kanban</button>
+            <button id="viewCalendar" class="view-btn px-2.5 py-1.5 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800">Calendário</button>
+          </div>
+          <button id="btnBpmn" class="hidden border border-neutral-200 dark:border-neutral-700 text-sm font-medium px-3 py-1.5 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-800 items-center gap-1.5">
+            <i class="fas fa-project-diagram text-xs"></i> Fluxo BPMN
+          </button>
+          <button id="btnNewTask" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-md flex items-center gap-1.5">
+            <i class="fas fa-plus text-xs"></i> Nova
+          </button>
+        </div>
+      </header>
+
+      <div class="px-5 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3" id="kpiRow"></div>
+      </div>
+
+      <div class="px-5 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center gap-2 flex-wrap">
+        <div class="relative flex-1 min-w-[140px] max-w-xs">
+          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+          <input id="searchInput" type="text" placeholder="Buscar..." class="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500" />
+        </div>
+        <select id="filterPriority" class="text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 py-1.5 text-neutral-600 dark:text-neutral-300">
+          <option value="">Prioridade</option>
+          <option value="Alta">Alta</option>
+          <option value="Média">Média</option>
+          <option value="Baixa">Baixa</option>
+        </select>
+        <select id="sortBy" class="text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-2 py-1.5 text-neutral-600 dark:text-neutral-300">
+          <option value="deadline">Prazo</option>
+          <option value="priority">Prioridade</option>
+          <option value="updated">Atualização</option>
+        </select>
+      </div>
+
+      <div class="flex-1 overflow-y-auto" id="contentArea">
+        <div id="listView" class="px-5 py-4 space-y-5"></div>
+        <div id="kanbanView" class="hidden px-5 py-4">
+          <div id="kanbanBoard" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+        <div id="calendarView" class="hidden px-5 py-4">
+          <div class="flex items-center justify-between mb-4">
+            <button id="calPrev" class="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500"><i class="fas fa-chevron-left text-sm"></i></button>
+            <h2 id="calTitle" class="font-semibold text-sm"></h2>
+            <div class="flex items-center gap-1">
+              <button id="calToday" class="px-2.5 py-1 text-xs rounded-md border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800">Hoje</button>
+              <button id="calNext" class="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500"><i class="fas fa-chevron-right text-sm"></i></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-px bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800" id="calGrid"></div>
+        </div>
+        <div id="reportsView" class="hidden px-5 py-4">
+          <div id="reportsContent" class="space-y-6 max-w-3xl"></div>
+        </div>
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+            <i class="fas fa-inbox text-neutral-400 text-sm"></i>
+          </div>
+          <p class="text-sm text-neutral-500">Nenhuma atividade</p>
+          <button id="btnEmptyNew" class="mt-2 text-sm text-blue-600 hover:underline">Criar a primeira</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Detail Drawer -->
+    <div id="drawerBackdrop" class="drawer-backdrop fixed inset-0 bg-black/25 z-40"></div>
+    <aside id="drawer" class="drawer fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 z-50 flex flex-col shadow-2xl">
+      <div class="h-14 shrink-0 px-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+        <span class="text-sm font-medium text-neutral-500">Detalhes</span>
+        <div class="flex items-center gap-0.5">
+          <button id="drawerArchive" class="p-2 rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800" title="Arquivar"><i class="fas fa-archive text-sm"></i></button>
+          <button id="drawerDelete" class="p-2 rounded-md text-neutral-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500" title="Excluir"><i class="fas fa-trash text-sm"></i></button>
+          <button id="drawerClose" class="p-2 rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800" title="Fechar"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5 space-y-5" id="drawerBody"></div>
+      <div class="shrink-0 p-4 border-t border-neutral-200 dark:border-neutral-800 flex justify-end gap-2">
+        <button id="drawerCancel" class="px-3 py-1.5 text-sm rounded-md text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">Fechar</button>
+        <button id="drawerSave" class="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium">Salvar</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Project modal -->
+  <div id="projectModal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/40" id="projectModalBg"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-xl w-full max-w-sm border border-neutral-200 dark:border-neutral-800">
+        <div class="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+          <h3 id="projectModalTitle" class="font-semibold text-sm">Novo projeto</h3>
+          <button id="closeProjectModal" class="text-neutral-400 hover:text-neutral-600"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="projectForm" class="p-4 space-y-3">
+          <input type="hidden" id="projectId" />
+          <div>
+            <label class="block text-xs font-medium text-neutral-500 mb-1">Nome</label>
+            <input type="text" id="projectName" required class="w-full px-3 py-2 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-neutral-500 mb-1">Descrição</label>
+            <input type="text" id="projectDesc" class="w-full px-3 py-2 text-sm rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-neutral-500 mb-1">Cor</label>
+            <input type="color" id="projectColor" value="#2563eb" class="w-full h-9 rounded-md cursor-pointer" />
+          </div>
+          <div class="flex justify-end gap-2 pt-1">
+            <button type="button" id="cancelProject" class="px-3 py-1.5 text-sm rounded-md text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancelar</button>
+            <button type="submit" class="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

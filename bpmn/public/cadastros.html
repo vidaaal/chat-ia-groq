@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastros — Mini LECOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>body{font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="bg-neutral-100 min-h-screen flex flex-col">
+  <div id="topbar"></div>
+  <main class="flex-1 flex items-center justify-center p-6">
+    <div class="bg-white border rounded-xl p-8 max-w-md text-center shadow-sm">
+      <div class="w-14 h-14 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center mx-auto mb-4 text-xl"><i class="fas fa-cube"></i></div>
+      <h1 class="text-lg font-semibold text-violet-900">Cadastros</h1>
+      <p class="text-sm text-neutral-500 mt-2">Cadastro Fácil (placeholder MVP)</p>
+      <p class="text-xs text-neutral-400 mt-4">No LECOM real este módulo tem funcionalidade completa. Aqui é só a entrada do menu, como no print.</p>
+      <a href="workspace.html" class="inline-block mt-6 text-sm text-violet-700 hover:underline">← Voltar ao Workspace</a>
+    </div>
+  </main>
+  <script src="lecom-core.js"></script>
+  <script>
+    document.getElementById("topbar").innerHTML = LECOM.topBar("Cadastros");
+    LECOM.bindTopBar("cadastros");
+  </script>
+</body>
+</html>

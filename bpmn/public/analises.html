@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análises — Mini LECOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="lecom-ui.css"/>
+  <style>body{font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="bg-neutral-100 min-h-screen flex flex-col">
+  <div id="topbar"></div>
+  <main id="main" class="flex-1 overflow-y-auto p-6"></main>
+  <script src="lecom-core.js"></script>
+  <script>
+    const L = window.LECOM;
+    document.getElementById("topbar").innerHTML = L.topBar("Análises");
+    L.bindTopBar("analises");
+    const all = L.state.instances;
+    const abertos = all.filter(i => i.status === "Em andamento");
+    const concluidos = all.filter(i => i.status === "Concluído");
+    const atrasados = abertos.filter(i => L.instSla(i) === "atrasado");
+    const byProc = {};
+    all.forEach(i => {
+      if (!byProc[i.processId]) byProc[i.processId] = { process: L.processById(i.processId), total:0, open:0, done:0, late:0 };
+      byProc[i.processId].total++;
+      if (i.status==="Em andamento") byProc[i.processId].open++;
+      if (i.status==="Concluído") byProc[i.processId].done++;
+      if (i.status==="Em andamento" && L.instSla(i)==="atrasado") byProc[i.processId].late++;
+    });
+    document.getElementById("main").innerHTML = `
+      <div class="max-w-4xl">
+        <h1 class="text-xl font-semibold mb-1">Análises</h1>
+        <p class="text-sm text-neutral-500 mb-6">Volume e atrasos</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          <div class="bg-white border rounded-lg p-4"><p class="text-xs text-neutral-500">Instâncias</p><p class="text-2xl font-semibold mt-1">${all.length}</p></div>
+          <div class="bg-sky-50 border border-sky-100 rounded-lg p-4"><p class="text-xs text-sky-700">Em andamento</p><p class="text-2xl font-semibold mt-1">${abertos.length}</p></div>
+          <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4"><p class="text-xs text-emerald-700">Concluídas</p><p class="text-2xl font-semibold mt-1">${concluidos.length}</p></div>
+          <div class="bg-red-50 border border-red-100 rounded-lg p-4"><p class="text-xs text-red-700">Atrasadas</p><p class="text-2xl font-semibold mt-1">${atrasados.length}</p></div>
+        </div>
+        <div class="bg-white border rounded-xl overflow-hidden mb-8">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-neutral-50 text-[11px] uppercase text-neutral-500 border-b">
+              <th class="px-3 py-2 text-left">Processo</th><th class="px-3 py-2 text-right">Total</th>
+              <th class="px-3 py-2 text-right">Abertos</th><th class="px-3 py-2 text-right">Concluídos</th>
+              <th class="px-3 py-2 text-right">Atrasados</th>
+            </tr></thead>
+            <tbody>${Object.values(byProc).map(g=>`
+              <tr class="border-b border-neutral-100">
+                <td class="px-3 py-2">${L.esc((g.process&&g.process.name)||"—")}</td>
+                <td class="px-3 py-2 text-right">${g.total}</td><td class="px-3 py-2 text-right">${g.open}</td>
+                <td class="px-3 py-2 text-right">${g.done}</td>
+                <td class="px-3 py-2 text-right ${g.late?"text-red-600 font-medium":""}">${g.late}</td>
+              </tr>`).join("")||'<tr><td colspan="5" class="px-3 py-8 text-center text-neutral-400">Sem dados</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+        <h2 class="text-sm font-semibold mb-2">Auditoria recente</h2>
+        <div class="space-y-2">${(L.state.audit||[]).slice(0,20).map(l=>`
+          <div class="bg-white border rounded-lg px-4 py-2 text-sm">
+            <p class="text-[11px] text-neutral-400">${L.fmt(l.at)} · ${L.esc((L.userById(l.userId)||{}).name||"")}</p>
+            <p>${L.esc(l.text)}</p>
+          </div>`).join("")||'<p class="text-sm text-neutral-400">Sem eventos</p>'}
+        </div>
+      </div>`;
+  </script>
+</body>
+</html>

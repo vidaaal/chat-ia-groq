@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluxo BPMN — Controle Pessoal</title>
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css" />
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-js.css" />
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn-embedded.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: Inter, system-ui, sans-serif; background: #fafafa; color: #171717; }
+    .topbar {
+      height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 16px;
+      border-bottom: 1px solid #e5e5e5; background: #fff;
+    }
+    .topbar h1 { font-size: 14px; font-weight: 600; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar .muted { font-size: 12px; color: #737373; font-weight: 400; }
+    .btn {
+      border: 1px solid #e5e5e5; background: #fff; color: #171717; font-size: 13px;
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:hover { background: #f5f5f5; }
+    .btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost { border-color: transparent; color: #525252; }
+    #canvas { height: calc(100% - 52px); }
+    .bjs-powered-by { display: none !important; }
+    .status { font-size: 12px; color: #737373; margin-right: 8px; }
+    .status.saved { color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html" class="btn btn-ghost" title="Voltar">← Voltar</a>
+    <h1 id="title">Fluxo BPMN <span class="muted" id="projectName"></span></h1>
+    <span class="status" id="status"></span>
+    <button class="btn" id="btnImport" title="Importar .bpmn">Importar</button>
+    <input type="file" id="fileInput" accept=".bpmn,.xml,.atos" style="display:none" />
+    <button class="btn" id="btnExportBpmn">Exportar .bpmn</button>
+    <button class="btn" id="btnExportAtos">Exportar .atos</button>
+    <button class="btn btn-primary" id="btnSave">Salvar</button>
+  </div>
+  <div id="canvas"></div>
+
+  <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-modeler.development.js"></script>
+  <script>
+    const STORAGE_KEY = 'controle_atividades_rafael_v4';
+    const EMPTY_BPMN = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Início"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="180" y="160" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
+    const params = new URLSearchParams(location.search);
+    const projectId = params.get('project');
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return { projects: [], tasks: [] };
+    }
+
+    function saveStore(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    const store = loadStore();
+    const project = (store.projects || []).find(p => p.id === projectId);
+
+    if (!projectId || !project) {
+      document.getElementById('title').textContent = 'Projeto não encontrado';
+      document.getElementById('canvas').innerHTML =
+        '<div style="padding:40px;text-align:center;color:#737373">Abra o editor a partir de um projeto no Controle Pessoal.</div>';
+    } else {
+      document.getElementById('projectName').textContent = '· ' + project.name;
+
+      const modeler = new BpmnJS({
+        container: '#canvas',
+        keyboard: { bindTo: document }
+      });
+
+      const xml = project.bpmnXml || EMPTY_BPMN;
+
+      modeler.importXML(xml).then(() => {
+        modeler.get('canvas').zoom('fit-viewport');
+        setStatus('Pronto');
+      }).catch(err => {
+        console.error(err);
+        modeler.importXML(EMPTY_BPMN).then(() => modeler.get('canvas').zoom('fit-viewport'));
+        setStatus('XML inválido — diagrama em branco');
+      });
+
+      function setStatus(msg, ok) {
+        const el = document.getElementById('status');
+        el.textContent = msg;
+        el.className = 'status' + (ok ? ' saved' : '');
+      }
+
+      async function getXml() {
+        const result = await modeler.saveXML({ format: true });
+        return result.xml;
+      }
+
+      function download(filename, content) {
+        const blob = new Blob([content], { type: 'application/xml' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+
+      document.getElementById('btnSave').onclick = async () => {
+        try {
+          const xmlOut = await getXml();
+          const s = loadStore();
+          const p = (s.projects || []).find(x => x.id === projectId);
+          if (p) {
+            p.bpmnXml = xmlOut;
+            p.bpmnUpdatedAt = new Date().toISOString();
+            saveStore(s);
+            setStatus('Salvo', true);
+            setTimeout(() => setStatus(''), 2000);
+          }
+        } catch (e) {
+          alert('Erro ao salvar: ' + e.message);
+        }
+      };
+
+      document.getElementById('btnExportBpmn').onclick = async () => {
+        const xmlOut = await getXml();
+        const safe = (project.name || 'fluxo').replace(/[^\w\-]+/g, '_');
+        download(safe + '.bpmn', xmlOut);
+      };
+
+      document.getElementById('btnExportAtos').onclick = async () => {
+        // Lecom/AtosBPM uses proprietary .atos; we export BPMN 2.0 XML with .atos extension.
+        // If the platform rejects it, import a real .atos sample so we can adapt the format.
+        const xmlOut = await getXml();
+        const safe = (project.name || 'fluxo').replace(/[^\w\-]+/g, '_');
+        download(safe + '.atos', xmlOut);
+        setStatus('.atos = BPMN XML (proprietário Lecom pode exigir ajuste)');
+      };
+
+      document.getElementById('btnImport').onclick = () => document.getElementById('fileInput').click();
+      document.getElementById('fileInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          await modeler.importXML(text);
+          modeler.get('canvas').zoom('fit-viewport');
+          setStatus('Importado: ' + file.name);
+        } catch (err) {
+          alert('Não foi possível importar este arquivo. Use .bpmn (BPMN 2.0 XML).\n' + err.message);
+        }
+        e.target.value = '';
+      };
+
+      // Auto-save reminder on leave
+      window.addEventListener('beforeunload', (e) => {
+        // optional — user can save manually
+      });
+    }
+  </script>
+</body>
+</html>

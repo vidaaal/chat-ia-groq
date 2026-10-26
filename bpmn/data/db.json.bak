@@ -1,0 +1,73 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Rafael",
+      "email": "rafael@empresa.com",
+      "role": "Analista TI",
+      "dept": "TI",
+      "active": true
+    },
+    {
+      "id": "u2",
+      "name": "Tyago",
+      "email": "tyago@empresa.com",
+      "role": "Gestor",
+      "dept": "TI",
+      "active": true
+    },
+    {
+      "id": "u3",
+      "name": "Thyago",
+      "email": "thyago@empresa.com",
+      "role": "Analista",
+      "dept": "Controladoria",
+      "active": true
+    },
+    {
+      "id": "u4",
+      "name": "Eliezer",
+      "email": "eliezer@empresa.com",
+      "role": "Solicitante",
+      "dept": "Operações",
+      "active": true
+    },
+    {
+      "id": "u5",
+      "name": "Administrador",
+      "email": "admin@empresa.com",
+      "role": "Administrador",
+      "dept": "Administrativo",
+      "active": true
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "name": "Aprovadores TI",
+      "memberIds": [
+        "u2"
+      ]
+    },
+    {
+      "id": "g2",
+      "name": "Controladoria",
+      "memberIds": [
+        "u3"
+      ]
+    },
+    {
+      "id": "g3",
+      "name": "Administrativo",
+      "memberIds": [
+        "u5",
+        "u1"
+      ]
+    }
+  ],
+  "processes": [],
+  "instances": [],
+  "audit": [],
+  "currentUserId": "u3",
+  "nextProcCode": 1
+}

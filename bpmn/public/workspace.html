@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Workspace — Mini LECOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="lecom-ui.css"/>
+</head>
+<body class="lc-app">
+  <div id="topbar"></div>
+  <div class="lc-shell">
+    <aside class="lc-side">
+      <div class="side-head">Workspace</div>
+      <nav>
+        <button type="button" data-view="abrir" class="lc-nav"><i class="fas fa-plus"></i> Catálogo / Abrir</button>
+        <button type="button" data-view="inbox" class="lc-nav"><i class="fas fa-bolt"></i> Minhas atividades <span id="badgeInbox" class="badge hidden">0</span></button>
+        <button type="button" data-view="caixa" class="lc-nav"><i class="fas fa-inbox"></i> Caixa de entrada</button>
+        <button type="button" data-view="alerta" class="lc-nav"><i class="fas fa-bell"></i> Em alerta</button>
+        <button type="button" data-view="atraso" class="lc-nav"><i class="fas fa-clock"></i> Em atraso</button>
+        <button type="button" data-view="mine" class="lc-nav"><i class="fas fa-folder-open"></i> Abertos por mim</button>
+        <button type="button" data-view="delegar" class="lc-nav"><i class="fas fa-user-clock"></i> Delegação</button>
+      </nav>
+      <div class="side-foot">Mini LECOM · Node · Workspace</div>
+    </aside>
+    <main id="main" class="lc-main"></main>
+  </div>
+  <script src="lecom-core.js"></script>
+  <script src="workspace.js"></script>
+</body>
+</html>

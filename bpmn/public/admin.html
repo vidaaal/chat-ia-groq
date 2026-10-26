@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Mini LECOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="lecom-ui.css"/>
+  <style>body{font-family:Inter,system-ui,sans-serif}.nav.active{background:#ede9fe;color:#5b21b6;font-weight:500}</style>
+</head>
+<body class="lc-app bg-neutral-100 min-h-screen flex flex-col">
+  <div id="topbar"></div>
+  <div class="flex flex-1 overflow-hidden" style="height:calc(100vh - 3rem)">
+    <aside class="w-48 shrink-0 bg-white border-r p-2 space-y-0.5">
+      <button data-tab="users" class="nav active w-full text-left px-3 py-2 rounded-md text-sm">Pessoas</button>
+      <button data-tab="groups" class="nav w-full text-left px-3 py-2 rounded-md text-sm">Grupos</button>
+    </aside>
+    <main id="main" class="flex-1 overflow-y-auto p-6"></main>
+  </div>
+  <div id="modal" class="fixed inset-0 z-50 hidden"><div class="absolute inset-0 bg-black/40" id="modalBg"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md border max-h-[90vh] overflow-y-auto">
+        <div class="px-4 py-3 border-b flex justify-between"><h3 id="modalTitle" class="font-semibold text-sm"></h3>
+          <button id="modalClose"><i class="fas fa-times text-neutral-400"></i></button></div>
+        <div id="modalBody" class="p-4"></div>
+      </div>
+    </div>
+  </div>
+  <script src="lecom-core.js"></script>
+  <script>
+    const L = window.LECOM;
+    document.getElementById("topbar").innerHTML = L.topBar("Admin");
+    L.bindTopBar("admin");
+    let tab = "users";
+    function render() {
+      document.querySelectorAll(".nav").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      const main = document.getElementById("main");
+      if (tab === "users") {
+        main.innerHTML = `<div class="max-w-3xl"><div class="flex justify-between mb-4"><div><h1 class="text-xl font-semibold">Pessoas</h1><p class="text-sm text-neutral-500">Usuários, departamento e função</p></div>
+          <button id="btnNewUser" class="bg-violet-700 text-white text-sm px-3 py-1.5 rounded"><i class="fas fa-plus mr-1"></i>Nova</button></div>
+          <div class="bg-white border rounded-xl divide-y">${L.state.users.map(u=>`
+            <div class="flex items-center gap-3 px-4 py-3">
+              <div class="w-9 h-9 rounded-full bg-violet-100 text-violet-800 flex items-center justify-center text-sm font-semibold">${L.esc(u.name[0])}</div>
+              <div class="flex-1"><p class="font-medium text-sm">${L.esc(u.name)}</p>
+              <p class="text-xs text-neutral-400">${L.esc(u.email||"")} · ${L.esc(u.role||"")} · ${L.esc(u.dept||"")}</p></div>
+              <button data-eu="${u.id}" class="text-xs text-violet-700">Editar</button>
+            </div>`).join("")}</div></div>`;
+        document.getElementById("btnNewUser").onclick = () => openUser();
+        document.querySelectorAll("[data-eu]").forEach(b => b.onclick = () => openUser(b.dataset.eu));
+      } else {
+        main.innerHTML = `<div class="max-w-3xl"><div class="flex justify-between mb-4"><div><h1 class="text-xl font-semibold">Grupos</h1><p class="text-sm text-neutral-500">Atribuição coletiva</p></div>
+          <button id="btnNewGroup" class="bg-violet-700 text-white text-sm px-3 py-1.5 rounded"><i class="fas fa-plus mr-1"></i>Novo</button></div>
+          <div class="space-y-2">${(L.state.groups||[]).map(g=>`
+            <div class="bg-white border rounded-xl p-4 flex gap-3">
+              <div class="flex-1"><p class="font-semibold text-sm">${L.esc(g.name)}</p>
+              <p class="text-xs text-neutral-500 mt-1">${(g.memberIds||[]).map(id=>L.esc((L.userById(id)||{}).name||id)).join(", ")}</p></div>
+              <button data-eg="${g.id}" class="text-xs text-violet-700">Editar</button>
+            </div>`).join("")}</div></div>`;
+        document.getElementById("btnNewGroup").onclick = () => openGroup();
+        document.querySelectorAll("[data-eg]").forEach(b => b.onclick = () => openGroup(b.dataset.eg));
+      }
+    }
+    function openUser(id) {
+      const u = id ? L.userById(id) : {name:"",email:"",role:"",dept:"",active:true};
+      document.getElementById("modalTitle").textContent = id ? "Editar pessoa" : "Nova pessoa";
+      document.getElementById("modalBody").innerHTML = `<form id="f" class="space-y-3">
+        <input id="n" class="w-full border rounded px-3 py-2 text-sm" placeholder="Nome" value="${L.esc(u.name)}" required/>
+        <input id="e" class="w-full border rounded px-3 py-2 text-sm" placeholder="E-mail" value="${L.esc(u.email||"")}"/>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="r" class="border rounded px-3 py-2 text-sm" placeholder="Função" value="${L.esc(u.role||"")}"/>
+          <input id="d" class="border rounded px-3 py-2 text-sm" placeholder="Departamento" value="${L.esc(u.dept||"")}"/>
+        </div>
+        <div class="flex justify-end gap-2"><button type="button" id="cancel" class="px-3 py-1.5 text-sm border rounded">Cancelar</button>
+        <button class="px-3 py-1.5 text-sm bg-violet-700 text-white rounded">Salvar</button></div></form>`;
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("cancel").onclick = () => document.getElementById("modal").classList.add("hidden");
+      document.getElementById("f").onsubmit = e => {
+        e.preventDefault();
+        const data = { name: n.value.trim(), email: e.value.trim(), role: r.value.trim(), dept: d.value.trim(), active: true };
+        if (!data.name) return;
+        if (id) { const i = L.state.users.findIndex(x=>x.id===id); L.state.users[i] = {...L.state.users[i],...data}; }
+        else L.state.users.push({id:L.uid("u"),...data});
+        L.audit("Usuário: "+data.name); L.save(); document.getElementById("modal").classList.add("hidden"); render();
+      };
+    }
+    function openGroup(id) {
+      const g = id ? L.groupById(id) : {name:"",memberIds:[]};
+      document.getElementById("modalTitle").textContent = id ? "Editar grupo" : "Novo grupo";
+      document.getElementById("modalBody").innerHTML = `<form id="f" class="space-y-3">
+        <input id="gn" class="w-full border rounded px-3 py-2 text-sm" value="${L.esc(g.name)}" placeholder="Nome" required/>
+        <div class="border rounded p-2 max-h-40 overflow-y-auto space-y-1">
+          ${L.state.users.map(u=>`<label class="flex gap-2 text-sm"><input type="checkbox" class="gm" value="${u.id}" ${(g.memberIds||[]).includes(u.id)?"checked":""}/> ${L.esc(u.name)}</label>`).join("")}
+        </div>
+        <div class="flex justify-end gap-2"><button type="button" id="cancel" class="px-3 py-1.5 text-sm border rounded">Cancelar</button>
+        <button class="px-3 py-1.5 text-sm bg-violet-700 text-white rounded">Salvar</button></div></form>`;
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("cancel").onclick = () => document.getElementById("modal").classList.add("hidden");
+      document.getElementById("f").onsubmit = e => {
+        e.preventDefault();
+        const name = gn.value.trim(); if (!name) return;
+        const memberIds = [...document.querySelectorAll(".gm:checked")].map(c=>c.value);
+        if (id) { const i = L.state.groups.findIndex(x=>x.id===id); L.state.groups[i] = {...L.state.groups[i],name,memberIds}; }
+        else L.state.groups.push({id:L.uid("g"),name,memberIds});
+        L.audit("Grupo: "+name); L.save(); document.getElementById("modal").classList.add("hidden"); render();
+      };
+    }
+    document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); });
+    document.getElementById("modalClose").onclick = document.getElementById("modalBg").onclick = () => document.getElementById("modal").classList.add("hidden");
+    render();
+  </script>
+</body>
+</html>

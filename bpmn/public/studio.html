@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Studio — Mini LECOM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="lecom-ui.css"/>
+  <style>
+    body{font-family:Inter,system-ui,sans-serif}
+    .wiz-step{position:relative}
+    .wiz-step.active{color:#4c1d95;font-weight:600}
+    .wiz-step.active .wiz-ico{background:#4c1d95;color:#fff}
+    .wiz-ico{width:28px;height:28px;border-radius:9999px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:11px}
+    .row-sel{background:#ede9fe}
+  </style>
+</head>
+<body class="lc-app min-h-screen flex flex-col" style="background:var(--bg);color:var(--text)">
+  <div id="topbar"></div>
+  <div id="app" class="flex-1 overflow-hidden flex flex-col"></div>
+  <script src="lecom-core.js"></script>
+  <script src="studio.js"></script>
+</body>
+</html>

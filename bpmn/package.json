@@ -1,0 +1,16 @@
+{
+  "name": "mini-lecom",
+  "version": "1.0.0",
+  "description": "MVP inspirado no LECOM — Workspace, Studio, Admin, Análises (Node.js)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["lecom", "bpm", "workflow", "node"],
+  "author": "Rafael Vidal",
+  "license": "MIT"
+}
